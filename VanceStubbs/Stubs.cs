@@ -62,7 +62,7 @@ namespace VanceStubbs
 				}
 				else
 				{
-					tb = mb.DefineType(abstractType.FullName, TypeAttributes.Class);
+					tb = mb.DefineType(abstractType.FullName, TypeAttributes.Class, abstractType);
 				}
 
 				foreach(var method in AbstractMethodsFor(abstractType))

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -68,11 +71,39 @@ namespace Sandbox
 		}
 	}
 
+	abstract class Abstract1 : IAbstract
+	{
+		public abstract void Lol();
+
+		/// <inheritdoc />
+		public abstract void F();
+
+		/// <inheritdoc />
+		public abstract int G();
+
+		/// <inheritdoc />
+		public abstract string H();
+
+		/// <inheritdoc />
+		public abstract DateTime I();
+	}
+
+	abstract class Abstract2 : Abstract1, IAbstract
+	{
+		/// <inheritdoc />
+		public override void Lol()
+		{
+			
+		}
+
+		public abstract void Lol2();
+	}
+
 	class Program
 	{
 		static void Main(string[] args)
 		{
-
+			
 		}
 	}
 }
