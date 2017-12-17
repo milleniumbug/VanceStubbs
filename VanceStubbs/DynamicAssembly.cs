@@ -12,17 +12,17 @@ namespace VanceStubbs
 
 		public static readonly ModuleBuilder Module = Assembly.DefineDynamicModule("proxiesmodule");
 
-		public static TypeInfo ImplementAbstractMethods(Type abstractType, Action<MethodInfo, ILGenerator> implementer)
+		public static TypeInfo ImplementAbstractMethods(string prefix, Type abstractType, Action<MethodInfo, ILGenerator> implementer)
 		{
 			TypeBuilder tb;
 			if(abstractType.IsInterface)
 			{
-				tb = Module.DefineType(abstractType.FullName, TypeAttributes.Class);
+				tb = Module.DefineType(prefix + abstractType.FullName, TypeAttributes.Class);
 				tb.AddInterfaceImplementation(abstractType);
 			}
 			else
 			{
-				tb = Module.DefineType(abstractType.FullName, TypeAttributes.Class, abstractType);
+				tb = Module.DefineType(prefix + abstractType.FullName, TypeAttributes.Class, abstractType);
 			}
 
 			foreach(var method in AbstractMethodsFor(abstractType))

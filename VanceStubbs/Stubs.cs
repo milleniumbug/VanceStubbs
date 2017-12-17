@@ -17,7 +17,7 @@ namespace VanceStubbs
 
 		public static object WhiteHole(Type type)
 		{
-			var concreteType = whiteholes.GetOrAdd(type, t => DynamicAssembly.ImplementAbstractMethods(t, ImplementAsThrowing));
+			var concreteType = whiteholes.GetOrAdd(type, t => DynamicAssembly.ImplementAbstractMethods("WhiteHole.", t, ImplementAsThrowing));
 			return Activator.CreateInstance(concreteType);
 
 			void ImplementAsThrowing(MethodInfo originalMethod, ILGenerator il)
@@ -40,7 +40,7 @@ namespace VanceStubbs
 
 		public static object BlackHole(Type type)
 		{
-			var concreteType = blackholes.GetOrAdd(type, t => DynamicAssembly.ImplementAbstractMethods(t, ImplementAsReturnDefault));
+			var concreteType = blackholes.GetOrAdd(type, t => DynamicAssembly.ImplementAbstractMethods("BlackHole.", t, ImplementAsReturnDefault));
 			return Activator.CreateInstance(concreteType);
 
 			void ImplementAsReturnDefault(MethodInfo originalMethod, ILGenerator il)
