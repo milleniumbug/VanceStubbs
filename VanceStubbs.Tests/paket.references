@@ -1,2 +1,6 @@
-NUnit
-FsCheck
+group Analyzers
+  StyleCop.Analyzers
+
+group Test
+  NUnit
+  FsCheck
