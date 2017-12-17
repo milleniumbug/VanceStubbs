@@ -1,3 +1,14 @@
+storage: none
 source https://www.nuget.org/api/v2/
-nuget FsCheck
-nuget NUnit
+nuget System.Reflection.Emit
+
+group Analyzers
+  storage: none
+  source https://www.nuget.org/api/v2/
+  nuget StyleCop.Analyzers
+
+group Test
+  storage: none
+  source https://www.nuget.org/api/v2/
+  nuget FsCheck
+  nuget NUnit

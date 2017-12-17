@@ -1,1 +1,4 @@
 System.Reflection.Emit
+
+group Analyzers
+  StyleCop.Analyzers
