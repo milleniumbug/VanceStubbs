@@ -42,6 +42,8 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StubsTests.cs" />
+    <Compile Include="Types\AbstractGetProperty.cs" />
+    <Compile Include="Types\IGetProperty.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VanceStubbs\VanceStubbs.csproj">

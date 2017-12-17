@@ -6,13 +6,21 @@ using System.Reflection.Emit;
 
 namespace VanceStubbs
 {
-	internal static class DynamicAssembly
+	internal class DynamicAssembly
 	{
-		public static readonly AssemblyBuilder Assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("proxies"), AssemblyBuilderAccess.RunAndCollect);
+		public readonly AssemblyBuilder Assembly;
 
-		public static readonly ModuleBuilder Module = Assembly.DefineDynamicModule("proxiesmodule");
+		public readonly ModuleBuilder Module;
 
-		public static TypeInfo ImplementAbstractMethods(string prefix, Type abstractType, Action<MethodInfo, ILGenerator> implementer)
+		public DynamicAssembly()
+		{
+			Assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("VanceStubbs"+Guid.NewGuid()), AssemblyBuilderAccess.RunAndCollect);
+			Module = Assembly.DefineDynamicModule("proxiesmodule");
+		}
+
+		public static readonly DynamicAssembly Default = new DynamicAssembly();
+
+		public TypeInfo ImplementAbstractMethods(string prefix, Type abstractType, Action<MethodInfo, ILGenerator> implementer)
 		{
 			TypeBuilder tb;
 			if(abstractType.IsInterface)
@@ -33,7 +41,7 @@ namespace VanceStubbs
 			return tb.CreateTypeInfo();
 		}
 
-		private static IEnumerable<MethodInfo> AbstractMethodsFor(Type type)
+		private IEnumerable<MethodInfo> AbstractMethodsFor(Type type)
 		{
 			foreach(var i in type.GetInterfaces())
 			{
