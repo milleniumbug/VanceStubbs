@@ -5,14 +5,16 @@ VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{0D61F72F-9F60-4E9C-B7A5-0A4D9A3E61D7}"
 	ProjectSection(SolutionItems) = preProject
+		appveyor.yml = appveyor.yml
 		paket.dependencies = paket.dependencies
+		paket.lock = paket.lock
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VanceStubbs", "VanceStubbs\VanceStubbs.csproj", "{ABBADE43-1788-4FBD-A5B0-2FAAF47FE321}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VanceStubbs.Tests", "VanceStubbs.Tests\VanceStubbs.Tests.csproj", "{DB6057A5-373B-46F0-8F26-0371E3CC4C62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VanceStubbs.Tests", "VanceStubbs.Tests\VanceStubbs.Tests.csproj", "{DB6057A5-373B-46F0-8F26-0371E3CC4C62}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandbox", "Sandbox\Sandbox.csproj", "{F8ADD820-2BE2-4FBC-B3B0-CC08C8730C93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sandbox", "Sandbox\Sandbox.csproj", "{F8ADD820-2BE2-4FBC-B3B0-CC08C8730C93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
