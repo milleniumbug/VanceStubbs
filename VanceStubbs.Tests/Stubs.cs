@@ -39,6 +39,16 @@ namespace VanceStubbs.Tests
 		}
 
 		[Test]
+		public void MultipleInstantiatedGenerics()
+		{
+			IList<string> inst = VanceStubbs.Stubs.WhiteHole<IList<string>>();
+			Assert.Throws<NotImplementedException>(() =>
+			{
+				inst.RemoveAt(0);
+			});
+		}
+
+		[Test]
 		public void Undefined()
 		{
 			Assert.Throws<NotImplementedException>(() =>
