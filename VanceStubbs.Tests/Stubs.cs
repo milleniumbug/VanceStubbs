@@ -17,9 +17,10 @@ namespace VanceStubbs.Tests
 		[Test]
 		public void BlackHole()
 		{
-			IList<int> inst = VanceStubbs.Stubs.BlackHole<IList<int>>();
+			IList<string> inst = VanceStubbs.Stubs.BlackHole<IList<string>>();
 			Assert.AreEqual(inst.Count, 0);
-			Assert.AreEqual(inst[0], 0);
+			Assert.AreEqual(inst[0], null);
+			inst.RemoveAt(0);
 		}
 
 		[Test]
