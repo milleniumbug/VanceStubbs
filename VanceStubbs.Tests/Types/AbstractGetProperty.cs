@@ -1,7 +1,7 @@
 ﻿namespace VanceStubbs.Tests.Types
 {
-	abstract class AbstractGetProperty
-	{
-		public abstract int Value { get; }
-	}
+    public abstract class AbstractGetProperty
+    {
+        public abstract int Value { get; }
+    }
 }
