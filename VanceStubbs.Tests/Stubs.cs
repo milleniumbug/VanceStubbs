@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection.Emit;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,17 +24,26 @@ namespace VanceStubbs.Tests
 		public void WhiteHole()
 		{
 			IList<int> inst = VanceStubbs.Stubs.WhiteHole<IList<int>>();
-			Assert.Throws<Exception>(() =>
+			Assert.Throws<NotImplementedException>(() =>
 			{
 				var c = inst.Count;
 			});
-			Assert.Throws<Exception>(() =>
+			Assert.Throws<NotImplementedException>(() =>
 			{
 				inst[0] = 42;
 			});
-			Assert.Throws<Exception>(() =>
+			Assert.Throws<NotImplementedException>(() =>
 			{
 				var i = inst[0];
+			});
+		}
+
+		[Test]
+		public void Undefined()
+		{
+			Assert.Throws<NotImplementedException>(() =>
+			{
+				Console.WriteLine(new DateTime(2, 3, 5, VanceStubbs.Stubs.Undefined<Calendar>()));
 			});
 		}
 	}
