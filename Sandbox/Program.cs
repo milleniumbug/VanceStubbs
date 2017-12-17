@@ -15,6 +15,7 @@ namespace Sandbox
 		int G();
 		string H();
 		DateTime I();
+		FileAccess J();
 	}
 
 	public class BlackHole : IAbstract
@@ -28,19 +29,25 @@ namespace Sandbox
 		/// <inheritdoc />
 		public int G()
 		{
-			return 0;
+			return default(int);
 		}
 
 		/// <inheritdoc />
 		public string H()
 		{
-			return null;
+			return default(string);
 		}
 
 		/// <inheritdoc />
 		public DateTime I()
 		{
 			return default(DateTime);
+		}
+
+		/// <inheritdoc />
+		public FileAccess J()
+		{
+			return default(FileAccess);
 		}
 	}
 
@@ -69,6 +76,12 @@ namespace Sandbox
 		{
 			throw new NotImplementedException();
 		}
+
+		/// <inheritdoc />
+		public FileAccess J()
+		{
+			throw new NotImplementedException();
+		}
 	}
 
 	abstract class Abstract1 : IAbstract
@@ -86,6 +99,9 @@ namespace Sandbox
 
 		/// <inheritdoc />
 		public abstract DateTime I();
+
+		/// <inheritdoc />
+		public abstract FileAccess J();
 	}
 
 	abstract class Abstract2 : Abstract1, IAbstract
