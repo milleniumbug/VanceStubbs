@@ -41,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Stubs.cs" />
+    <Compile Include="StubsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VanceStubbs\VanceStubbs.csproj">

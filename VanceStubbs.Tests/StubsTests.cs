@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace VanceStubbs.Tests
 {
 	[TestFixture]
-	public class Stubs
+	public class StubsTests
 	{
 		[Test]
 		public void BlackHole()
