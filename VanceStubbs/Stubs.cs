@@ -10,11 +10,11 @@ namespace VanceStubbs
 {
 	public static class Stubs
 	{
-		private static AssemblyBuilder ab = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndCollect);
+		private static readonly AssemblyBuilder ab = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("proxies"), AssemblyBuilderAccess.RunAndCollect);
 
-		private static ModuleBuilder mb = ab.DefineDynamicModule(Guid.NewGuid().ToString());
+		private static readonly ModuleBuilder mb = ab.DefineDynamicModule("proxiesmodule");
 
-		private static ConcurrentDictionary<Guid, TypeInfo> types = new ConcurrentDictionary<Guid, TypeInfo>();
+		private static readonly ConcurrentDictionary<Type, TypeInfo> types = new ConcurrentDictionary<Type, TypeInfo>();
 
 		public static TAbstract BlackHole<TAbstract>()
 		{
@@ -52,20 +52,20 @@ namespace VanceStubbs
 
 		public static object WhiteHole(Type type)
 		{
-			TypeInfo CreateType()
+			TypeInfo CreateType(Type abstractType)
 			{
 				TypeBuilder tb;
-				if(type.IsInterface)
+				if(abstractType.IsInterface)
 				{
-					tb = mb.DefineType(type.GUID.ToString(), TypeAttributes.Class);
-					tb.AddInterfaceImplementation(type);
+					tb = mb.DefineType(abstractType.FullName, TypeAttributes.Class);
+					tb.AddInterfaceImplementation(abstractType);
 				}
 				else
 				{
-					tb = mb.DefineType(type.GUID.ToString(), TypeAttributes.Class);
+					tb = mb.DefineType(abstractType.FullName, TypeAttributes.Class);
 				}
 
-				foreach(var method in AbstractMethodsFor(type))
+				foreach(var method in AbstractMethodsFor(abstractType))
 				{
 					var methodOverride = tb.DefineMethod(
 						method.Name,
@@ -79,7 +79,7 @@ namespace VanceStubbs
 				return tb.CreateTypeInfo();
 			}
 
-			var concreteType = types.GetOrAdd(type.GUID, g => CreateType());
+			var concreteType = types.GetOrAdd(type, CreateType);
 			return Activator.CreateInstance(concreteType);
 		}
 

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Reflection.Emit;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +37,16 @@ namespace VanceStubbs.Tests
 			Assert.Throws<NotImplementedException>(() =>
 			{
 				var i = inst[0];
+			});
+		}
+
+		[Test]
+		public void WhiteHoleAbstractClass()
+		{
+			Stream inst = VanceStubbs.Stubs.WhiteHole<Stream>();
+			Assert.Throws<NotImplementedException>(() =>
+			{
+				var c = inst.CanRead;
 			});
 		}
 
