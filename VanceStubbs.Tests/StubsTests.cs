@@ -1,12 +1,11 @@
-﻿namespace VanceStubbs.Tests
+namespace VanceStubbs.Tests
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.Globalization;
     using System.IO;
     using NUnit.Framework;
-    using VanceStubbs.Tests.Types;
+    using Types;
 
     [TestFixture]
     public class StubsTests

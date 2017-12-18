@@ -1,4 +1,4 @@
-﻿namespace VanceStubbs.Tests.Types
+namespace VanceStubbs.Tests.Types
 {
     public abstract class AbstractGetProperty
     {

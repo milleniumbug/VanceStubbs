@@ -1,4 +1,4 @@
-﻿namespace VanceStubbs
+namespace VanceStubbs
 {
     using System;
     using System.Collections.Concurrent;
