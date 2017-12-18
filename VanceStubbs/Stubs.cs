@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Concurrent;
+    using System.ComponentModel;
     using System.Reflection;
     using System.Reflection.Emit;
 
@@ -95,6 +96,17 @@
                     il.Emit(OpCodes.Ret);
                 }
             }
+        }
+
+        public static TAbstract NotifyPropertyChangedProxy<TAbstract>()
+            where TAbstract : INotifyPropertyChanged
+        {
+            return (TAbstract)NotifyPropertyChangedProxy(typeof(TAbstract));
+        }
+
+        public static INotifyPropertyChanged NotifyPropertyChangedProxy(Type type)
+        {
+            throw new NotImplementedException();
         }
     }
 }

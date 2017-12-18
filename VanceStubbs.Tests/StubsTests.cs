@@ -2,9 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Globalization;
     using System.IO;
     using NUnit.Framework;
+    using VanceStubbs.Tests.Types;
 
     [TestFixture]
     public class StubsTests
@@ -63,6 +65,21 @@
             {
                 Console.WriteLine(new DateTime(2, 3, 5, VanceStubbs.Stubs.Undefined<Calendar>()));
             });
+        }
+
+        [Test]
+        public void NotifyPropertyChangedProxy()
+        {
+            var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<IGetSetNotifyProperty>();
+            proxy.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(IGetSetNotifyProperty.Value))
+                {
+                    Assert.Pass();
+                }
+            };
+            proxy.Value = 42;
+            Assert.Fail();
         }
     }
 }
