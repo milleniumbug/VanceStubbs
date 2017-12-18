@@ -1,6 +1,7 @@
 namespace VanceStubbs.Tests.Types
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
 
@@ -40,6 +41,18 @@ namespace VanceStubbs.Tests.Types
 
         Stream CustomClass();
 
+        IEnumerator Interface();
+
         List<int> Generic();
+
+        IList<int> GenericInterface();
+
+        int[] Array();
+
+        FileAccess Enum();
+
+        Action Delegate();
+
+        // int* Pointer();
     }
 }
