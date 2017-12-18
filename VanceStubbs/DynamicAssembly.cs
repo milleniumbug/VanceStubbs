@@ -22,20 +22,24 @@
 
         public TypeInfo ImplementAbstractMethods(string prefix, Type abstractType, Action<MethodInfo, ILGenerator> implementer)
         {
-            TypeBuilder tb;
+            var tb = this.Module.DefineType(prefix + abstractType.FullName, TypeAttributes.Class);
             if (abstractType.IsInterface)
             {
-                tb = this.Module.DefineType(prefix + abstractType.FullName, TypeAttributes.Class);
                 tb.AddInterfaceImplementation(abstractType);
             }
             else
             {
-                tb = this.Module.DefineType(prefix + abstractType.FullName, TypeAttributes.Class, abstractType);
+                tb.SetParent(abstractType);
             }
 
             foreach (var method in this.AbstractMethodsFor(abstractType))
             {
-                var methodOverride = tb.DefineMethod(method.Name, method.Attributes & ~MethodAttributes.Abstract, method.CallingConvention, method.ReturnType, Enumerable.Select<ParameterInfo, Type>(method.GetParameters(), p => p.ParameterType).ToArray());
+                var methodOverride = tb.DefineMethod(
+                    method.Name,
+                    method.Attributes & ~MethodAttributes.Abstract,
+                    method.CallingConvention,
+                    method.ReturnType,
+                    method.GetParameters().Select(p => p.ParameterType).ToArray());
                 implementer(method, methodOverride.GetILGenerator());
             }
 
