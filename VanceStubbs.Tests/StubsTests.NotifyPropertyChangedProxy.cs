@@ -22,6 +22,21 @@ namespace VanceStubbs.Tests
                 proxy.Value = 42;
                 Assert.Fail();
             }
+
+            [Test]
+            public void Advanced()
+            {
+                var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<INotifyManyProperties>();
+                proxy.PropertyChanged += (sender, args) =>
+                {
+                    if (args.PropertyName == nameof(INotifyManyProperties.Long))
+                    {
+                        Assert.Pass();
+                    }
+                };
+                proxy.Long = 42;
+                Assert.Fail();
+            }
         }
     }
 }

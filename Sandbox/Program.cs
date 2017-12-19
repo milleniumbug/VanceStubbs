@@ -14,7 +14,7 @@ namespace Sandbox
     {
         static void Main(string[] args)
         {
-            var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<IGetSetNotifyProperty>();
+            var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<INotifyManyProperties>();
         }
     }
 }

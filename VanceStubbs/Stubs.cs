@@ -2,6 +2,7 @@ namespace VanceStubbs
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
     using System.Reflection;
@@ -123,6 +124,9 @@ namespace VanceStubbs
                     tb.SetParent(t);
                 }
 
+                var staticConstructor = tb.DefineTypeInitializer();
+                var staticConstructorIl = staticConstructor.GetILGenerator();
+
                 var ev = type
                     .GetInterface(nameof(INotifyPropertyChanged))
                     .GetEvent(nameof(INotifyPropertyChanged.PropertyChanged));
@@ -130,16 +134,32 @@ namespace VanceStubbs
 
                 foreach (var property in ab.AbstractPropertiesFor(t))
                 {
-                    ImplementNotifyProperty(tb, property, inpcField);
+                    var staticComparer = ImplementNotifyProperty(tb, property, inpcField);
+                    if (staticComparer != null)
+                    {
+                        staticConstructorIl.EmitCall(
+                            OpCodes.Call,
+                            typeof(EqualityComparer<>).MakeGenericType(property.PropertyType).GetMethod("get_Default"),
+                            null);
+                        staticConstructorIl.Emit(OpCodes.Stsfld, staticComparer);
+                    }
                 }
+                staticConstructorIl.Emit(OpCodes.Ret);
                 return tb.CreateTypeInfo();
             });
             return (INotifyPropertyChanged)Activator.CreateInstance(concreteType);
         }
 
-        private static void ImplementNotifyProperty(TypeBuilder tb, PropertyInfo property, FieldInfo inpcEventField)
+        private static FieldInfo ImplementNotifyProperty(TypeBuilder tb, PropertyInfo property, FieldInfo inpcEventField)
         {
             var ab = DynamicAssembly.Default;
+            var staticComparerType = typeof(EqualityComparer<>).MakeGenericType(property.PropertyType);
+            var staticComparer = NeedsStaticEqualityComparer(property.PropertyType)
+                ? tb.DefineField(
+                    "comp" + property.PropertyType.GUID,
+                    staticComparerType,
+                    FieldAttributes.Static | FieldAttributes.Private | FieldAttributes.InitOnly)
+                : null;
             var field = tb.DefineField(
                 property.Name + "__backing_field" + Guid.NewGuid(),
                 property.PropertyType,
@@ -166,10 +186,14 @@ namespace VanceStubbs
                     property.SetMethod.GetParameters().Select(p => p.ParameterType).ToArray());
                 var il = setter.GetILGenerator();
                 il.DeclareLocal(typeof(bool));
+                if (staticComparer != null)
+                {
+                    il.Emit(OpCodes.Ldsfld, staticComparer);
+                }
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldfld, field);
                 il.Emit(OpCodes.Ldarg_1);
-                Equality(il, property.PropertyType);
+                Equality(il, property.PropertyType, staticComparer);
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldarg_1);
                 il.Emit(OpCodes.Stfld, field);
@@ -191,16 +215,39 @@ namespace VanceStubbs
                 il.Emit(OpCodes.Ret);
             }
 
-            void Equality(ILGenerator il, Type type)
+            return staticComparer;
+
+            bool NeedsStaticEqualityComparer(Type type)
+            {
+                return !type.IsPrimitive && type.GetMethod("op_Equality") == null;
+            }
+
+            void Equality(ILGenerator il, Type type, FieldInfo comparer)
             {
                 var label = il.DefineLabel();
-                if (type == typeof(int))
+                if (type.IsPrimitive)
                 {
                     il.Emit(OpCodes.Bne_Un_S, label);
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    var operatorEquals = type.GetMethod("op_Equality");
+                    if (operatorEquals != null)
+                    {
+                        il.EmitCall(
+                            OpCodes.Call,
+                            operatorEquals,
+                            null);
+                        il.Emit(OpCodes.Brfalse_S, label);
+                    }
+                    else
+                    {
+                        il.EmitCall(
+                            OpCodes.Callvirt,
+                            staticComparerType.GetMethod(nameof(EqualityComparer<int>.Equals), BindingFlags.Static),
+                            null);
+                        il.Emit(OpCodes.Brfalse_S, label);
+                    }
                 }
 
                 il.Emit(OpCodes.Ret);
