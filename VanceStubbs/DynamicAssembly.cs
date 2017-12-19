@@ -36,7 +36,7 @@ namespace VanceStubbs
             {
                 var methodOverride = tb.DefineMethod(
                     method.Name,
-                    method.Attributes & ~MethodAttributes.Abstract,
+                    method.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot),
                     method.CallingConvention,
                     method.ReturnType,
                     method.GetParameters().Select(p => p.ParameterType).ToArray());
@@ -48,21 +48,26 @@ namespace VanceStubbs
 
         private IEnumerable<MethodInfo> AbstractMethodsFor(Type type)
         {
-            foreach (var i in type.GetInterfaces())
+            return Impl().Distinct();
+
+            IEnumerable<MethodInfo> Impl()
             {
-                foreach (var m in this.AbstractMethodsFor(i))
+                foreach (var i in type.GetInterfaces())
+                {
+                    foreach (var m in this.AbstractMethodsFor(i))
+                    {
+                        yield return m;
+                    }
+                }
+
+                var abstractThis = type.GetMethods()
+                    .Concat(type.GetProperties().Select(p => p.SetMethod))
+                    .Concat(type.GetProperties().Select(p => p.GetMethod))
+                    .Where(m => m?.IsAbstract == true);
+                foreach (var m in abstractThis)
                 {
                     yield return m;
                 }
-            }
-
-            var abstractThis = type.GetMethods()
-                .Concat(type.GetProperties().Select(p => p.SetMethod))
-                .Concat(type.GetProperties().Select(p => p.GetMethod))
-                .Where(m => m?.IsAbstract == true);
-            foreach (var m in abstractThis)
-            {
-                yield return m;
             }
         }
     }
