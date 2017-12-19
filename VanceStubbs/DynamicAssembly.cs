@@ -52,11 +52,14 @@ namespace VanceStubbs
 
             IEnumerable<MethodInfo> Impl()
             {
-                foreach (var i in type.GetInterfaces())
+                if (type.IsInterface)
                 {
-                    foreach (var m in this.AbstractMethodsFor(i))
+                    foreach (var i in type.GetInterfaces())
                     {
-                        yield return m;
+                        foreach (var m in this.AbstractMethodsFor(i))
+                        {
+                            yield return m;
+                        }
                     }
                 }
 
