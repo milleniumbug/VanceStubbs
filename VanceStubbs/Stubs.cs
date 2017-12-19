@@ -107,7 +107,7 @@ namespace VanceStubbs
 
         public static INotifyPropertyChanged NotifyPropertyChangedProxy(Type type)
         {
-            var concreteType = Whiteholes.GetOrAdd(type, t =>
+            var concreteType = InpcProxies.GetOrAdd(type, t =>
             {
                 var ab = DynamicAssembly.Default;
                 var tb = ab.Module.DefineType("INPC." + t.FullName, TypeAttributes.Class);
