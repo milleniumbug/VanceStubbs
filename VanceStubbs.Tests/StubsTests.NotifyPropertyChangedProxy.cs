@@ -5,7 +5,6 @@ namespace VanceStubbs.Tests
 
     public partial class StubsTests
     {
-        [Ignore("Not implemented yet")]
         [TestFixture]
         public class NotifyPropertyChangedProxy
         {

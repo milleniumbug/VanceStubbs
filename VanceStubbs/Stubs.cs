@@ -10,6 +10,7 @@ namespace VanceStubbs
     {
         private static readonly ConcurrentDictionary<Type, TypeInfo> Whiteholes = new ConcurrentDictionary<Type, TypeInfo>();
         private static readonly ConcurrentDictionary<Type, TypeInfo> Blackholes = new ConcurrentDictionary<Type, TypeInfo>();
+        private static readonly ConcurrentDictionary<Type, TypeInfo> InpcProxies = new ConcurrentDictionary<Type, TypeInfo>();
 
         public static TAbstract WhiteHole<TAbstract>()
         {
@@ -106,7 +107,31 @@ namespace VanceStubbs
 
         public static INotifyPropertyChanged NotifyPropertyChangedProxy(Type type)
         {
-            throw new NotImplementedException();
+            var concreteType = Whiteholes.GetOrAdd(type, t =>
+            {
+                var ab = DynamicAssembly.Default;
+                var tb = ab.Module.DefineType("INPC." + t.FullName, TypeAttributes.Class);
+                if (t.IsInterface)
+                {
+                    tb.AddInterfaceImplementation(t);
+                }
+                else
+                {
+                    tb.SetParent(t);
+                }
+
+                var ev = type
+                    .GetInterface(nameof(INotifyPropertyChanged))
+                    .GetEvent(nameof(INotifyPropertyChanged.PropertyChanged));
+                var inpcField = ab.ImplementEventByDelegatingToANewField(tb, ev);
+
+                foreach (var property in ab.AbstractPropertiesFor(t))
+                {
+                    ab.ImplementNotifyProperty(tb, property, inpcField);
+                }
+                return tb.CreateTypeInfo();
+            });
+            return (INotifyPropertyChanged)Activator.CreateInstance(concreteType);
         }
     }
 }

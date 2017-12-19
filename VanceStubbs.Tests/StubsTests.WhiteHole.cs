@@ -69,6 +69,12 @@ namespace VanceStubbs.Tests
                     inst.RemoveAt(0);
                 });
             }
+
+            [Test]
+            public void AllMethods()
+            {
+                IAllMethods inst = VanceStubbs.Stubs.WhiteHole<IAllMethods>();
+            }
         }
     }
 }

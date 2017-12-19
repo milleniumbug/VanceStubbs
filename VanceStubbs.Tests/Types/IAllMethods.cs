@@ -37,6 +37,10 @@ namespace VanceStubbs.Tests.Types
 
         object Object();
 
+        IntPtr IntPtr();
+
+        UIntPtr UIntPtr();
+
         DateTime CustomStruct();
 
         Stream CustomClass();

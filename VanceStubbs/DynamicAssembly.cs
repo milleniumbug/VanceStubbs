@@ -2,6 +2,7 @@ namespace VanceStubbs
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
@@ -51,10 +52,81 @@ namespace VanceStubbs
             return tb.CreateTypeInfo();
         }
 
-        public void ImplementEventByDelegatingToANewField(TypeBuilder tb, EventInfo e)
+        public void ImplementNotifyProperty(TypeBuilder tb, PropertyInfo property, FieldInfo inpcEventField)
+        {
+            var field = tb.DefineField(
+                property.Name + "__backing_field" + Guid.NewGuid(),
+                property.PropertyType,
+                FieldAttributes.Private | FieldAttributes.SpecialName);
+            {
+                var getter = tb.DefineMethod(
+                    property.GetMethod.Name,
+                    property.GetMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot),
+                    property.GetMethod.CallingConvention,
+                    property.GetMethod.ReturnType,
+                    property.GetMethod.GetParameters().Select(p => p.ParameterType).ToArray());
+                var il = getter.GetILGenerator();
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, field);
+                il.Emit(OpCodes.Ret);
+            }
+
+            {
+                var setter = tb.DefineMethod(
+                    property.SetMethod.Name,
+                    property.SetMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot),
+                    property.SetMethod.CallingConvention,
+                    property.SetMethod.ReturnType,
+                    property.SetMethod.GetParameters().Select(p => p.ParameterType).ToArray());
+                var il = setter.GetILGenerator();
+                il.DeclareLocal(typeof(bool));
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, field);
+                il.Emit(OpCodes.Ldloc_1);
+                Equality(il, property.PropertyType);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Stfld, field);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, inpcEventField);
+                il.Emit(OpCodes.Dup);
+                var label = il.DefineLabel();
+                il.Emit(OpCodes.Brtrue_S, label);
+                il.Emit(OpCodes.Pop);
+                il.Emit(OpCodes.Ret);
+                il.MarkLabel(label);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldstr, property.Name);
+                il.Emit(OpCodes.Newobj, typeof(PropertyChangedEventArgs).GetConstructor(new[] { typeof(string) }));
+                il.EmitCall(
+                    OpCodes.Callvirt,
+                    typeof(PropertyChangedEventHandler).GetMethod(nameof(PropertyChangedEventHandler.Invoke)),
+                    null);
+                il.Emit(OpCodes.Ret);
+            }
+
+            void Equality(ILGenerator il, Type type)
+            {
+                var label = il.DefineLabel();
+                if (type == typeof(int))
+                {
+                    il.Emit(OpCodes.Bne_Un_S);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+
+                il.Emit(OpCodes.Ret, label);
+                il.MarkLabel(label);
+            }
+        }
+
+        public FieldInfo ImplementEventByDelegatingToANewField(TypeBuilder tb, EventInfo e)
         {
             var fb = tb.DefineField(e.Name, e.EventHandlerType, FieldAttributes.Family);
             this.ImplementEventWithField(tb, e, fb);
+            return fb;
         }
 
         public void ImplementEventWithField(TypeBuilder tb, EventInfo e, FieldInfo field)
@@ -132,6 +204,24 @@ namespace VanceStubbs
                 il.Emit(OpCodes.Ldloc_1);
                 il.Emit(OpCodes.Bne_Un_S, label);
                 il.Emit(OpCodes.Ret);
+            }
+        }
+
+        public IEnumerable<PropertyInfo> AbstractPropertiesFor(Type type)
+        {
+            if (type.IsInterface)
+            {
+                foreach (var p in type.GetProperties())
+                {
+                    yield return p;
+                }
+            }
+
+            var abstractThis = type.GetProperties()
+                .Where(e => e.SetMethod?.IsAbstract == true || e.GetMethod?.IsAbstract == true);
+            foreach (var p in abstractThis)
+            {
+                yield return p;
             }
         }
 
