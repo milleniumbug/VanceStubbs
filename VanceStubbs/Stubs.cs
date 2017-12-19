@@ -219,13 +219,13 @@ namespace VanceStubbs
 
             bool NeedsStaticEqualityComparer(Type type)
             {
-                return !type.IsPrimitive && type.GetMethod("op_Equality") == null;
+                return !type.IsPrimitive && !type.IsEnum && type.GetMethod("op_Equality") == null;
             }
 
             void Equality(ILGenerator il, Type type, FieldInfo comparer)
             {
                 var label = il.DefineLabel();
-                if (type.IsPrimitive)
+                if (type.IsPrimitive || type.IsEnum)
                 {
                     il.Emit(OpCodes.Bne_Un_S, label);
                 }
