@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace VanceStubbs
 {
     using System;
@@ -19,7 +21,8 @@ namespace VanceStubbs
 
         public static object WhiteHole(Type type)
         {
-            var concreteType = Whiteholes.GetOrAdd(type, t => DynamicAssembly.Default.ImplementAbstractMethods("WhiteHole.", t, ImplementAsThrowing));
+            var ab= DynamicAssembly.Default;
+            var concreteType = Whiteholes.GetOrAdd(type, t => ab.ImplementAbstractMethods("WhiteHole.", t, ImplementAsThrowing));
             return Activator.CreateInstance(concreteType);
 
             void ImplementAsThrowing(MethodInfo originalMethod, ILGenerator il)
@@ -40,7 +43,8 @@ namespace VanceStubbs
 
         public static object BlackHole(Type type)
         {
-            var concreteType = Blackholes.GetOrAdd(type, t => DynamicAssembly.Default.ImplementAbstractMethods("BlackHole.", t, ImplementAsReturnDefault));
+            var ab = DynamicAssembly.Default;
+            var concreteType = Blackholes.GetOrAdd(type, t => ab.ImplementAbstractMethods("BlackHole.", t, ImplementAsReturnDefault));
             return Activator.CreateInstance(concreteType);
 
             void ImplementAsReturnDefault(MethodInfo originalMethod, ILGenerator il)
@@ -107,9 +111,9 @@ namespace VanceStubbs
 
         public static INotifyPropertyChanged NotifyPropertyChangedProxy(Type type)
         {
+            var ab = DynamicAssembly.Default;
             var concreteType = InpcProxies.GetOrAdd(type, t =>
             {
-                var ab = DynamicAssembly.Default;
                 var tb = ab.Module.DefineType("INPC." + t.FullName, TypeAttributes.Class);
                 if (t.IsInterface)
                 {
@@ -127,11 +131,82 @@ namespace VanceStubbs
 
                 foreach (var property in ab.AbstractPropertiesFor(t))
                 {
-                    ab.ImplementNotifyProperty(tb, property, inpcField);
+                    ImplementNotifyProperty(tb, property, inpcField);
                 }
                 return tb.CreateTypeInfo();
             });
             return (INotifyPropertyChanged)Activator.CreateInstance(concreteType);
+        }
+
+        private static void ImplementNotifyProperty(TypeBuilder tb, PropertyInfo property, FieldInfo inpcEventField)
+        {
+            var ab = DynamicAssembly.Default;
+            var field = tb.DefineField(
+                property.Name + "__backing_field" + Guid.NewGuid(),
+                property.PropertyType,
+                FieldAttributes.Private | FieldAttributes.SpecialName);
+            {
+                var getter = tb.DefineMethod(
+                    property.GetMethod.Name,
+                    property.GetMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot),
+                    property.GetMethod.CallingConvention,
+                    property.GetMethod.ReturnType,
+                    property.GetMethod.GetParameters().Select(p => p.ParameterType).ToArray());
+                var il = getter.GetILGenerator();
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, field);
+                il.Emit(OpCodes.Ret);
+            }
+
+            {
+                var setter = tb.DefineMethod(
+                    property.SetMethod.Name,
+                    property.SetMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot),
+                    property.SetMethod.CallingConvention,
+                    property.SetMethod.ReturnType,
+                    property.SetMethod.GetParameters().Select(p => p.ParameterType).ToArray());
+                var il = setter.GetILGenerator();
+                il.DeclareLocal(typeof(bool));
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, field);
+                il.Emit(OpCodes.Ldloc_1);
+                Equality(il, property.PropertyType);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Stfld, field);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, inpcEventField);
+                il.Emit(OpCodes.Dup);
+                var label = il.DefineLabel();
+                il.Emit(OpCodes.Brtrue_S, label);
+                il.Emit(OpCodes.Pop);
+                il.Emit(OpCodes.Ret);
+                il.MarkLabel(label);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldstr, property.Name);
+                il.Emit(OpCodes.Newobj, typeof(PropertyChangedEventArgs).GetConstructor(new[] { typeof(string) }));
+                il.EmitCall(
+                    OpCodes.Callvirt,
+                    typeof(PropertyChangedEventHandler).GetMethod(nameof(PropertyChangedEventHandler.Invoke)),
+                    null);
+                il.Emit(OpCodes.Ret);
+            }
+
+            void Equality(ILGenerator il, Type type)
+            {
+                var label = il.DefineLabel();
+                if (type == typeof(int))
+                {
+                    il.Emit(OpCodes.Bne_Un_S, label);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+
+                il.Emit(OpCodes.Ret);
+                il.MarkLabel(label);
+            }
         }
     }
 }
