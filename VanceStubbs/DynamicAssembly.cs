@@ -37,6 +37,9 @@ namespace VanceStubbs
 
         private readonly bool debugMode;
 
+        // DEBUG METHOD ONLY
+        // Limited support across .NET runtimes
+        // If the runtime doesn't support generating, the request will be ignored
         public void Save()
         {
             if (!this.debugMode)

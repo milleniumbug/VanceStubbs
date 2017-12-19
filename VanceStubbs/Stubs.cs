@@ -1,10 +1,9 @@
-using System.Linq;
-
 namespace VanceStubbs
 {
     using System;
     using System.Collections.Concurrent;
     using System.ComponentModel;
+    using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
 
@@ -21,7 +20,7 @@ namespace VanceStubbs
 
         public static object WhiteHole(Type type)
         {
-            var ab= DynamicAssembly.Default;
+            var ab = DynamicAssembly.Default;
             var concreteType = Whiteholes.GetOrAdd(type, t => ab.ImplementAbstractMethods("WhiteHole.", t, ImplementAsThrowing));
             return Activator.CreateInstance(concreteType);
 
@@ -169,7 +168,7 @@ namespace VanceStubbs
                 il.DeclareLocal(typeof(bool));
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldfld, field);
-                il.Emit(OpCodes.Ldloc_1);
+                il.Emit(OpCodes.Ldarg_1);
                 Equality(il, property.PropertyType);
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldarg_1);
