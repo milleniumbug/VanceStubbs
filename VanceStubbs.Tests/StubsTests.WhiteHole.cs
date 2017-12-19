@@ -4,6 +4,7 @@ namespace VanceStubbs.Tests
     using System.Collections.Generic;
     using System.IO;
     using NUnit.Framework;
+    using VanceStubbs.Tests.Types;
 
     public partial class StubsTests
     {
@@ -36,6 +37,27 @@ namespace VanceStubbs.Tests
                 {
                     var c = inst.CanRead;
                 });
+            }
+
+            [Test]
+            public void DontOverrideNonAbstract()
+            {
+                AbstractGetProperty inst = VanceStubbs.Stubs.WhiteHole<AbstractGetProperty>();
+                Assert.Throws<NotImplementedException>(() =>
+                {
+                    var c = inst.Value;
+                });
+                inst.NonAbstractButVirtual = 42;
+                Assert.AreEqual(42, inst.NonAbstractButVirtual);
+            }
+
+            [Test]
+            public void Event()
+            {
+                IEvent e = VanceStubbs.Stubs.WhiteHole<IEvent>();
+                Action a = () => { };
+                e.Lol += a;
+                e.Lol -= a;
             }
 
             [Test]
