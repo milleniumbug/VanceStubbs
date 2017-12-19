@@ -5,4 +5,9 @@
   </PropertyGroup>
 
   <Import Project="..\.paket\Paket.Restore.targets" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\VanceStubbs.Tests\VanceStubbs.Tests.csproj" />
+    <ProjectReference Include="..\VanceStubbs\VanceStubbs.csproj" />
+  </ItemGroup>
 </Project>

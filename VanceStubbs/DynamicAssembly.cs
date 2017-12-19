@@ -62,7 +62,7 @@ namespace VanceStubbs
             {
                 var addMethod = tb.DefineMethod(
                     "add_" + e.Name,
-                    MethodAttributes.Virtual | MethodAttributes.SpecialName,
+                    MethodAttributes.Virtual | MethodAttributes.SpecialName | GetAccessibility(e.AddMethod),
                     CallingConventions.HasThis,
                     typeof(void),
                     new[] { e.EventHandlerType });
@@ -74,7 +74,7 @@ namespace VanceStubbs
             {
                 var removeMethod = tb.DefineMethod(
                     "remove_" + e.Name,
-                    MethodAttributes.Virtual | MethodAttributes.SpecialName,
+                    MethodAttributes.Virtual | MethodAttributes.SpecialName | GetAccessibility(e.RemoveMethod),
                     CallingConventions.HasThis,
                     typeof(void),
                     new[] { e.EventHandlerType });
@@ -83,12 +83,18 @@ namespace VanceStubbs
                     typeof(Delegate).GetMethod(nameof(Delegate.Remove)));
             }
 
+            MethodAttributes GetAccessibility(MemberInfo m)
+            {
+                return MethodAttributes.Public;
+            }
+
             void ImplementMethod(ILGenerator il, MethodInfo method)
             {
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldfld, field);
                 il.Emit(OpCodes.Stloc_0);
                 var label = il.DefineLabel();
+                il.MarkLabel(label);
                 il.Emit(OpCodes.Ldloc_0);
                 il.Emit(OpCodes.Stloc_1);
                 il.Emit(OpCodes.Ldloc_1);
@@ -103,9 +109,20 @@ namespace VanceStubbs
                 il.Emit(OpCodes.Ldflda, field);
                 il.Emit(OpCodes.Ldloc_2);
                 il.Emit(OpCodes.Ldloc_1);
+                var interlocked = typeof(System.Threading.Interlocked);
+                var casMethodParameterTypes = new[]
+                {
+                    e.EventHandlerType.MakeByRefType(),
+                    e.EventHandlerType,
+                    e.EventHandlerType
+                };
+                var casMethod =
+                   interlocked.GetMethod(
+                       nameof(System.Threading.Interlocked.CompareExchange),
+                       casMethodParameterTypes);
                 il.EmitCall(
                     OpCodes.Call,
-                    typeof(System.Threading.Interlocked).GetMethod(nameof(System.Threading.Interlocked.CompareExchange), new[] { e.EventHandlerType }),
+                    casMethod,
                     null);
                 il.Emit(OpCodes.Stloc_0);
                 il.Emit(OpCodes.Ldloc_0);
