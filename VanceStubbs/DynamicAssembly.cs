@@ -90,6 +90,9 @@ namespace VanceStubbs
 
             void ImplementMethod(ILGenerator il, MethodInfo method)
             {
+                il.DeclareLocal(e.EventHandlerType);
+                il.DeclareLocal(e.EventHandlerType);
+                il.DeclareLocal(e.EventHandlerType);
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldfld, field);
                 il.Emit(OpCodes.Stloc_0);
