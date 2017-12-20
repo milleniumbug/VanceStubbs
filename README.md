@@ -1,4 +1,4 @@
-VanceStubbs
+VanceStubbs [![Build status](https://ci.appveyor.com/api/projects/status/w2k237to1bh6hqon?svg=true)](https://ci.appveyor.com/project/milleniumbug/vancestubbs)
 ======
 
 Stubs, proxies, AOP and magic.
