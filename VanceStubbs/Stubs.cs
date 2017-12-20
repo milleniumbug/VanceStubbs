@@ -188,6 +188,11 @@ namespace VanceStubbs
             FieldBuilder field)
         {
             {
+                if (property.SetMethod == null)
+                {
+                    return;
+                }
+
                 var setter = tb.DefineMethod(
                     property.SetMethod.Name,
                     property.SetMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot),
@@ -218,7 +223,7 @@ namespace VanceStubbs
                 il.MarkLabel(label);
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldstr, property.Name);
-                il.Emit(OpCodes.Newobj, typeof(PropertyChangedEventArgs).GetConstructor(new[] {typeof(string)}));
+                il.Emit(OpCodes.Newobj, typeof(PropertyChangedEventArgs).GetConstructor(new[] { typeof(string) }));
                 il.EmitCall(
                     OpCodes.Callvirt,
                     typeof(PropertyChangedEventHandler).GetMethod(nameof(PropertyChangedEventHandler.Invoke)),

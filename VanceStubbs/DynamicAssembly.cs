@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Sandbox")]
+
 namespace VanceStubbs
 {
     using System;
@@ -35,20 +39,6 @@ namespace VanceStubbs
         public AssemblyBuilder Assembly { get; }
 
         public ModuleBuilder Module { get; }
-
-        // DEBUG METHOD ONLY
-        // Limited support across .NET runtimes
-        // If the runtime doesn't support generating, the request will be ignored
-        public void Save()
-        {
-            if (!this.debugMode)
-            {
-                return;
-            }
-
-            var save = this.Assembly.GetType().GetMethod("Save", new[] { typeof(string) });
-            save?.Invoke(this.Assembly, new object[] { "aaaa.dll" });
-        }
 
         public TypeInfo ImplementAbstractMethods(string prefix, Type abstractType, Action<MethodInfo, ILGenerator> implementer)
         {
@@ -182,6 +172,20 @@ namespace VanceStubbs
             {
                 yield return p;
             }
+        }
+
+        // DEBUG METHOD ONLY
+        // Limited support across .NET runtimes
+        // If the runtime doesn't support generating, the request will be ignored
+        internal void Save()
+        {
+            if (!this.debugMode)
+            {
+                return;
+            }
+
+            var save = this.Assembly.GetType().GetMethod("Save", new[] { typeof(string) });
+            save?.Invoke(this.Assembly, new object[] { "aaaa.dll" });
         }
 
         private IEnumerable<EventInfo> AbstractEventsFor(Type type)
