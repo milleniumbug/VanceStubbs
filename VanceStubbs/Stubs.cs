@@ -190,6 +190,7 @@ namespace VanceStubbs
                 {
                     il.Emit(OpCodes.Ldsfld, staticComparer);
                 }
+
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldfld, field);
                 il.Emit(OpCodes.Ldarg_1);

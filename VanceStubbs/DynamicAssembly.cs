@@ -2,7 +2,6 @@ namespace VanceStubbs
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
@@ -10,6 +9,8 @@ namespace VanceStubbs
     internal class DynamicAssembly
     {
         public static readonly DynamicAssembly Default = new DynamicAssembly(debugMode: false);
+
+        private readonly bool debugMode;
 
         public DynamicAssembly(bool debugMode)
         {
@@ -34,8 +35,6 @@ namespace VanceStubbs
         public AssemblyBuilder Assembly { get; }
 
         public ModuleBuilder Module { get; }
-
-        private readonly bool debugMode;
 
         // DEBUG METHOD ONLY
         // Limited support across .NET runtimes
