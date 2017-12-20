@@ -3,7 +3,7 @@ namespace VanceStubbs.Tests.Types
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    public abstract class AbstractProperty : INotifyPropertyChanged
+    public abstract class AbstractPropertyConcreteINPCEvent : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

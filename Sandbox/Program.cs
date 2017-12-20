@@ -21,7 +21,7 @@ namespace Sandbox
             try
             {
                 var proxy = VanceStubbs.Stubs
-                    .NotifyPropertyChangedProxy<AbstractProperty>();
+                    .NotifyPropertyChangedProxy<AbstractPropertyConcreteINPCEvent>();
 
                 proxy.GetSet = 4;
                 proxy.PropertyChanged += (sender, args) =>

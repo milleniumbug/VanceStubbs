@@ -42,7 +42,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void DontOverrideNonAbstract()
             {
-                AbstractProperty inst = VanceStubbs.Stubs.WhiteHole<AbstractProperty>();
+                AbstractPropertyConcreteINPCEvent inst = VanceStubbs.Stubs.WhiteHole<AbstractPropertyConcreteINPCEvent>();
                 Assert.Throws<NotImplementedException>(() =>
                 {
                     var c = inst.Value;

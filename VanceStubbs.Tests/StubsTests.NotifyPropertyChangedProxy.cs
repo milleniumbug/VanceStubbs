@@ -1,8 +1,9 @@
-using System;
-
 namespace VanceStubbs.Tests
 {
+    using System;
     using System.Collections.ObjectModel;
+    using System.Linq;
+    using System.Reflection;
     using NUnit.Framework;
     using VanceStubbs.Tests.Types;
 
@@ -78,10 +79,10 @@ namespace VanceStubbs.Tests
             }
 
             [Test]
-            public void Abstract()
+            public void AbstractClassWithConcreteEvent()
             {
                 var proxy = VanceStubbs.Stubs
-                    .NotifyPropertyChangedProxy<AbstractProperty>();
+                    .NotifyPropertyChangedProxy<AbstractPropertyConcreteINPCEvent>();
 
                 proxy.GetSet = 4;
                 proxy.PropertyChanged += (sender, args) =>
@@ -93,6 +94,35 @@ namespace VanceStubbs.Tests
                 };
                 proxy.GetSet = 16;
                 Assert.Fail();
+            }
+
+            [Test]
+            public void AbstractClassWithAbstractEvent()
+            {
+                var proxy = VanceStubbs.Stubs
+                    .NotifyPropertyChangedProxy<AbstractPropertyAbstractINPCEvent>();
+
+                proxy.GetSet = 4;
+                proxy.PropertyChanged += (sender, args) =>
+                {
+                    if (args.PropertyName == nameof(proxy.GetSet))
+                    {
+                        Assert.Pass();
+                    }
+                };
+                proxy.GetSet = 16;
+                Assert.Fail();
+            }
+
+            [Explicit]
+            [Test]
+            public void KillerTestInterfaces()
+            {
+                var types = Assembly.GetExecutingAssembly().ExportedTypes.Where(t => t.IsInterface);
+                foreach (var type in types)
+                {
+                    var proxy = Stubs.NotifyPropertyChangedProxy(type);
+                }
             }
         }
     }
