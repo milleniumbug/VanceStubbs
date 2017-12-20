@@ -1,3 +1,5 @@
+using System;
+
 namespace VanceStubbs.Tests
 {
     using System.Collections.ObjectModel;
@@ -48,12 +50,30 @@ namespace VanceStubbs.Tests
                 proxy.Value = new ObservableCollection<int>(new[] { 1, 2, 3 });
                 proxy.PropertyChanged += (sender, args) =>
                 {
-                    if (args.PropertyName == nameof(IGetSetNotifyPropertyGeneric<ObservableCollection<int>>.Value))
+                    if (args.PropertyName == nameof(proxy.Value))
                     {
                         Assert.Pass();
                     }
                 };
                 proxy.Value = new ObservableCollection<int>();
+                Assert.Fail();
+            }
+
+            [Test]
+            public void Nullable()
+            {
+                var proxy = VanceStubbs.Stubs
+                    .NotifyPropertyChangedProxy<IGetSetNotifyPropertyGeneric<DateTime?>>();
+
+                proxy.Value = DateTime.MinValue;
+                proxy.PropertyChanged += (sender, args) =>
+                {
+                    if (args.PropertyName == nameof(proxy.Value))
+                    {
+                        Assert.Pass();
+                    }
+                };
+                proxy.Value = null;
                 Assert.Fail();
             }
         }

@@ -248,9 +248,12 @@ namespace VanceStubbs
                     }
                     else
                     {
+                        var equals = staticComparerType.GetMethod(
+                            "Equals",
+                            new[] { type, type });
                         il.EmitCall(
                             OpCodes.Callvirt,
-                            staticComparerType.GetMethod(nameof(EqualityComparer<int>.Equals), BindingFlags.Static),
+                            equals,
                             null);
                         il.Emit(OpCodes.Brfalse_S, label);
                     }
