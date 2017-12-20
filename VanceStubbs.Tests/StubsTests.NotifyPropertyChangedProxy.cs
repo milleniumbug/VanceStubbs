@@ -1,5 +1,6 @@
 namespace VanceStubbs.Tests
 {
+    using System.Collections.ObjectModel;
     using NUnit.Framework;
     using VanceStubbs.Tests.Types;
 
@@ -35,6 +36,24 @@ namespace VanceStubbs.Tests
                     }
                 };
                 proxy.Long = 42;
+                Assert.Fail();
+            }
+
+            [Test]
+            public void ReferenceEquals()
+            {
+                var proxy = VanceStubbs.Stubs
+                    .NotifyPropertyChangedProxy<IGetSetNotifyPropertyGeneric<ObservableCollection<int>>>();
+
+                proxy.Value = new ObservableCollection<int>(new[] { 1, 2, 3 });
+                proxy.PropertyChanged += (sender, args) =>
+                {
+                    if (args.PropertyName == nameof(IGetSetNotifyPropertyGeneric<ObservableCollection<int>>.Value))
+                    {
+                        Assert.Pass();
+                    }
+                };
+                proxy.Value = new ObservableCollection<int>();
                 Assert.Fail();
             }
         }

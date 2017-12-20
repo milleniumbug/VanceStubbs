@@ -218,15 +218,20 @@ namespace VanceStubbs
 
             return staticComparer;
 
+            bool UnorderedComparisonIsEnough(Type type)
+            {
+                return type.IsPrimitive || !type.IsValueType || type.IsEnum;
+            }
+
             bool NeedsStaticEqualityComparer(Type type)
             {
-                return !type.IsPrimitive && !type.IsEnum && type.GetMethod("op_Equality") == null;
+                return !UnorderedComparisonIsEnough(type) && type.GetMethod("op_Equality") == null;
             }
 
             void Equality(ILGenerator il, Type type, FieldInfo comparer)
             {
                 var label = il.DefineLabel();
-                if (type.IsPrimitive || type.IsEnum)
+                if (UnorderedComparisonIsEnough(type))
                 {
                     il.Emit(OpCodes.Bne_Un_S, label);
                 }
