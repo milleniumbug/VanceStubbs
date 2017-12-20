@@ -76,6 +76,24 @@ namespace VanceStubbs.Tests
                 proxy.Value = null;
                 Assert.Fail();
             }
+
+            [Test]
+            public void Abstract()
+            {
+                var proxy = VanceStubbs.Stubs
+                    .NotifyPropertyChangedProxy<AbstractProperty>();
+
+                proxy.GetSet = 4;
+                proxy.PropertyChanged += (sender, args) =>
+                {
+                    if (args.PropertyName == nameof(proxy.GetSet))
+                    {
+                        Assert.Pass();
+                    }
+                };
+                proxy.GetSet = 16;
+                Assert.Fail();
+            }
         }
     }
 }

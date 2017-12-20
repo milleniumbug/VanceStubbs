@@ -164,19 +164,29 @@ namespace VanceStubbs
                 property.Name + "__backing_field" + Guid.NewGuid(),
                 property.PropertyType,
                 FieldAttributes.Private | FieldAttributes.SpecialName);
-            {
-                var getter = tb.DefineMethod(
-                    property.GetMethod.Name,
-                    property.GetMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot),
-                    property.GetMethod.CallingConvention,
-                    property.GetMethod.ReturnType,
-                    property.GetMethod.GetParameters().Select(p => p.ParameterType).ToArray());
-                var il = getter.GetILGenerator();
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldfld, field);
-                il.Emit(OpCodes.Ret);
-            }
+            ImplementGetter(tb, property, field);
+            ImplementSetter(tb, property, inpcEventField, staticComparer, field);
 
+            return staticComparer;
+
+            bool NeedsStaticEqualityComparer(Type type)
+            {
+                return !UnorderedComparisonIsEnough(type) && type.GetMethod("op_Equality") == null;
+            }
+        }
+
+        private static bool UnorderedComparisonIsEnough(Type type)
+        {
+            return type.IsPrimitive || !type.IsValueType || type.IsEnum;
+        }
+
+        private static void ImplementSetter(
+            TypeBuilder tb,
+            PropertyInfo property,
+            FieldInfo inpcEventField,
+            FieldBuilder staticComparer,
+            FieldBuilder field)
+        {
             {
                 var setter = tb.DefineMethod(
                     property.SetMethod.Name,
@@ -208,24 +218,12 @@ namespace VanceStubbs
                 il.MarkLabel(label);
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldstr, property.Name);
-                il.Emit(OpCodes.Newobj, typeof(PropertyChangedEventArgs).GetConstructor(new[] { typeof(string) }));
+                il.Emit(OpCodes.Newobj, typeof(PropertyChangedEventArgs).GetConstructor(new[] {typeof(string)}));
                 il.EmitCall(
                     OpCodes.Callvirt,
                     typeof(PropertyChangedEventHandler).GetMethod(nameof(PropertyChangedEventHandler.Invoke)),
                     null);
                 il.Emit(OpCodes.Ret);
-            }
-
-            return staticComparer;
-
-            bool UnorderedComparisonIsEnough(Type type)
-            {
-                return type.IsPrimitive || !type.IsValueType || type.IsEnum;
-            }
-
-            bool NeedsStaticEqualityComparer(Type type)
-            {
-                return !UnorderedComparisonIsEnough(type) && type.GetMethod("op_Equality") == null;
             }
 
             void Equality(ILGenerator il, Type type, FieldInfo comparer)
@@ -248,7 +246,7 @@ namespace VanceStubbs
                     }
                     else
                     {
-                        var equals = staticComparerType.GetMethod(
+                        var equals = staticComparer.FieldType.GetMethod(
                             "Equals",
                             new[] { type, type });
                         il.EmitCall(
@@ -262,6 +260,23 @@ namespace VanceStubbs
                 il.Emit(OpCodes.Ret);
                 il.MarkLabel(label);
             }
+        }
+
+        private static void ImplementGetter(
+            TypeBuilder tb,
+            PropertyInfo property,
+            FieldBuilder field)
+        {
+            var getter = tb.DefineMethod(
+                property.GetMethod.Name,
+                property.GetMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot),
+                property.GetMethod.CallingConvention,
+                property.GetMethod.ReturnType,
+                property.GetMethod.GetParameters().Select(p => p.ParameterType).ToArray());
+            var il = getter.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, field);
+            il.Emit(OpCodes.Ret);
         }
     }
 }
