@@ -156,10 +156,13 @@ namespace VanceStubbs
             }
         }
 
-        private void DelegateAllConstructorsToBase(TypeBuilder tb)
+        public void DelegateAllConstructorsToBase(TypeBuilder tb)
         {
             var baseClass = tb.BaseType;
-            foreach (var constructor in baseClass.GetConstructors())
+            var constructors = baseClass
+                .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
+                .Where(c => c.IsFamily || c.IsFamilyOrAssembly || c.IsPublic);
+            foreach (var constructor in constructors)
             {
                 var parameters = constructor.GetParameters();
                 var constructorOverride = tb.DefineConstructor(
@@ -192,6 +195,9 @@ namespace VanceStubbs
                 {
                     il.Emit(OpCodes.Ldarg, (short)i);
                 }
+
+                il.Emit(OpCodes.Call, constructor);
+                il.Emit(OpCodes.Ret);
             }
         }
 

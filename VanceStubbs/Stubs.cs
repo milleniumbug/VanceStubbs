@@ -124,6 +124,8 @@ namespace VanceStubbs
                     tb.SetParent(t);
                 }
 
+                ab.DelegateAllConstructorsToBase(tb);
+
                 var staticConstructor = tb.DefineTypeInitializer();
                 var staticConstructorIl = staticConstructor.GetILGenerator();
 
