@@ -23,7 +23,7 @@ namespace VanceStubbs
         {
             var ab = DynamicAssembly.Default;
             var concreteType = Whiteholes.GetOrAdd(type, t => ab.ImplementAbstractMethods("WhiteHole.", t, ImplementAsThrowing));
-            return Activator.CreateInstance(concreteType);
+            return ab.ActivateInstance(concreteType);
 
             void ImplementAsThrowing(MethodInfo originalMethod, ILGenerator il)
             {
@@ -45,7 +45,7 @@ namespace VanceStubbs
         {
             var ab = DynamicAssembly.Default;
             var concreteType = Blackholes.GetOrAdd(type, t => ab.ImplementAbstractMethods("BlackHole.", t, ImplementAsReturnDefault));
-            return Activator.CreateInstance(concreteType);
+            return ab.ActivateInstance(concreteType);
 
             void ImplementAsReturnDefault(MethodInfo originalMethod, ILGenerator il)
             {
@@ -149,7 +149,7 @@ namespace VanceStubbs
                 staticConstructorIl.Emit(OpCodes.Ret);
                 return tb.CreateTypeInfo();
             });
-            return (INotifyPropertyChanged)Activator.CreateInstance(concreteType);
+            return (INotifyPropertyChanged)ab.ActivateInstance(concreteType);
         }
 
         private static FieldInfo ImplementNotifyProperty(TypeBuilder tb, PropertyInfo property, FieldInfo inpcEventField)
