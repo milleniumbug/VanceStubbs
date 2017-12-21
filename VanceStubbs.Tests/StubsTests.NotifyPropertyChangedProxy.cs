@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace VanceStubbs.Tests
 {
     using System;
@@ -114,11 +116,27 @@ namespace VanceStubbs.Tests
                 Assert.Fail();
             }
 
+            [Test]
+            public void DoesntExtendINPC()
+            {
+                var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<IGetSetProperty>();
+                ((INotifyPropertyChanged)proxy).PropertyChanged += (sender, args) =>
+                {
+                    if (args.PropertyName == nameof(IGetSetProperty.Value))
+                    {
+                        Assert.Pass();
+                    }
+                };
+                proxy.Value = 42;
+                Assert.Fail();
+                ;
+            }
+
             [Explicit]
             [Test]
             public void KillerTestInterfaces()
             {
-                var types = Assembly.GetExecutingAssembly().ExportedTypes.Where(t => t.IsInterface);
+                var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(asm => asm.ExportedTypes).Where(t => t.IsInterface);
                 foreach (var type in types)
                 {
                     var proxy = Stubs.NotifyPropertyChangedProxy(type);

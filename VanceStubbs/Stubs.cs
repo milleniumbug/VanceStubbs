@@ -104,7 +104,6 @@ namespace VanceStubbs
         }
 
         public static TAbstract NotifyPropertyChangedProxy<TAbstract>()
-            where TAbstract : INotifyPropertyChanged
         {
             return (TAbstract)NotifyPropertyChangedProxy(typeof(TAbstract));
         }
@@ -115,6 +114,7 @@ namespace VanceStubbs
             var concreteType = InpcProxies.GetOrAdd(type, t =>
             {
                 var tb = ab.Module.DefineType("INPC." + t.FullName, TypeAttributes.Class);
+                tb.AddInterfaceImplementation(typeof(INotifyPropertyChanged));
                 if (t.IsInterface)
                 {
                     tb.AddInterfaceImplementation(t);
@@ -127,8 +127,7 @@ namespace VanceStubbs
                 var staticConstructor = tb.DefineTypeInitializer();
                 var staticConstructorIl = staticConstructor.GetILGenerator();
 
-                var ev = t
-                    .GetInterface(nameof(INotifyPropertyChanged))
+                var ev = typeof(INotifyPropertyChanged)
                     .GetEvent(nameof(INotifyPropertyChanged.PropertyChanged));
                 var inpcField = HasINPCImplemented(t) ? null : ab.ImplementEventByDelegatingToANewField(tb, ev);
                 foreach (var property in ab.AbstractPropertiesFor(t))
