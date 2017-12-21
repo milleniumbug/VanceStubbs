@@ -132,7 +132,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void NonDefaultConstructible()
             {
-                var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<NonDefaultConstructibleAbstractPropertyConcreteINPCEvent>();
+                var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<NonDefaultConstructibleAbstractPropertyConcreteINPCEvent>(1337);
                 proxy.PropertyChanged += (sender, args) =>
                 {
                     if (args.PropertyName == nameof(proxy.GetSet))
@@ -141,13 +141,14 @@ namespace VanceStubbs.Tests
                     }
                 };
                 proxy.GetSet = 42;
+                Assert.AreEqual(proxy.NonAbstractButVirtual, 1337);
                 Assert.Fail();
             }
 
             [Test]
             public void ConstructorParameterDeathTest()
             {
-                var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<INPCPropertyAbstractConstructorDeathTest>();
+                var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<INPCPropertyAbstractConstructorDeathTest>(1337);
                 proxy.PropertyChanged += (sender, args) =>
                 {
                     if (args.PropertyName == nameof(proxy.GetSet))
@@ -156,6 +157,7 @@ namespace VanceStubbs.Tests
                     }
                 };
                 proxy.GetSet = 42;
+                Assert.AreEqual(proxy.NonAbstractButVirtual, 1337);
                 Assert.Fail();
             }
 

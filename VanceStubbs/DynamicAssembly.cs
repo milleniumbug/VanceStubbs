@@ -224,6 +224,11 @@ namespace VanceStubbs
             return Activator.CreateInstance(type);
         }
 
+        public object ActivateInstance(Type type, object parameter)
+        {
+            return Activator.CreateInstance(type, parameter);
+        }
+
         // DEBUG METHOD ONLY
         // Limited support across .NET runtimes
         // If the runtime doesn't support generating, the request will be ignored

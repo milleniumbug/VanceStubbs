@@ -103,12 +103,12 @@ namespace VanceStubbs
             }
         }
 
-        public static TAbstract NotifyPropertyChangedProxy<TAbstract>()
+        public static TAbstract NotifyPropertyChangedProxy<TAbstract>(object context = null)
         {
-            return (TAbstract)NotifyPropertyChangedProxy(typeof(TAbstract));
+            return (TAbstract)NotifyPropertyChangedProxy(typeof(TAbstract), context);
         }
 
-        public static INotifyPropertyChanged NotifyPropertyChangedProxy(Type type)
+        public static INotifyPropertyChanged NotifyPropertyChangedProxy(Type type, object context = null)
         {
             var ab = DynamicAssembly.Default;
             var concreteType = InpcProxies.GetOrAdd(type, t =>
@@ -149,7 +149,9 @@ namespace VanceStubbs
                 staticConstructorIl.Emit(OpCodes.Ret);
                 return tb.CreateTypeInfo();
             });
-            return (INotifyPropertyChanged)ab.ActivateInstance(concreteType);
+            return (INotifyPropertyChanged)(context == null
+                ? ab.ActivateInstance(concreteType)
+                : ab.ActivateInstance(concreteType, context));
         }
 
         private static FieldInfo ImplementNotifyProperty(TypeBuilder tb, PropertyInfo property, FieldInfo inpcEventField)
