@@ -206,6 +206,45 @@ namespace VanceStubbs
             }
         }
 
+        private void DelegateAllConstructorsToBase(TypeBuilder tb)
+        {
+            var baseClass = tb.BaseType;
+            foreach (var constructor in baseClass.GetConstructors())
+            {
+                var parameters = constructor.GetParameters();
+                var constructorOverride = tb.DefineConstructor(
+                    MethodAttributes.Public,
+                    CallingConventions.HasThis,
+                    parameters.Select(p => p.ParameterType).ToArray());
+                var il = constructorOverride.GetILGenerator();
+                il.Emit(OpCodes.Ldarg_0);
+                if (parameters.Length >= 1)
+                {
+                    il.Emit(OpCodes.Ldarg_1);
+                }
+
+                if (parameters.Length >= 2)
+                {
+                    il.Emit(OpCodes.Ldarg_2);
+                }
+
+                if (parameters.Length >= 3)
+                {
+                    il.Emit(OpCodes.Ldarg_3);
+                }
+
+                for (int i = 4; i <= Math.Min(parameters.Length, byte.MaxValue); ++i)
+                {
+                    il.Emit(OpCodes.Ldarg_S, (byte)i);
+                }
+
+                for (int i = 256; i <= Math.Min(parameters.Length, ushort.MaxValue); ++i)
+                {
+                    il.Emit(OpCodes.Ldarg, (short)i);
+                }
+            }
+        }
+
         private IEnumerable<MethodInfo> AbstractMethodsFor(Type type, bool skipEventMethods = false)
         {
             var methods = new HashSet<MethodInfo>(Impl());
