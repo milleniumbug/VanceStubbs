@@ -1,11 +1,9 @@
-using System.ComponentModel;
-
 namespace VanceStubbs.Tests
 {
     using System;
     using System.Collections.ObjectModel;
+    using System.ComponentModel;
     using System.Linq;
-    using System.Reflection;
     using NUnit.Framework;
     using VanceStubbs.Tests.Types;
 
@@ -129,14 +127,31 @@ namespace VanceStubbs.Tests
                 };
                 proxy.Value = 42;
                 Assert.Fail();
-                ;
+            }
+
+            [Test]
+            public void NonDefaultConstructible()
+            {
+                var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<NonDefaultConstructibleAbstractPropertyConcreteINPCEvent>();
+                proxy.PropertyChanged += (sender, args) =>
+                {
+                    if (args.PropertyName == nameof(proxy.GetSet))
+                    {
+                        Assert.Pass();
+                    }
+                };
+                proxy.GetSet = 42;
+                Assert.Fail();
             }
 
             [Explicit]
             [Test]
             public void KillerTestInterfaces()
             {
-                var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(asm => asm.ExportedTypes).Where(t => t.IsInterface);
+                var types = AppDomain.CurrentDomain
+                    .GetAssemblies()
+                    .SelectMany(asm => asm.ExportedTypes)
+                    .Where(t => t.IsInterface);
                 foreach (var type in types)
                 {
                     var proxy = Stubs.NotifyPropertyChangedProxy(type);
