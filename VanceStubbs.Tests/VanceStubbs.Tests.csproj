@@ -6,13 +6,6 @@
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
     <CodeAnalysisRuleSet>VanceStubbs.Tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <ItemGroup>
-    <None Include="Types\INPCPropertyAbstractConstructorDeathTest.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>INPCPropertyAbstractConstructorDeathTest.tt</DependentUpon>
-    </None>
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\VanceStubbs\VanceStubbs.csproj" />
@@ -20,25 +13,6 @@
   
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Compile Update="Types\INPCPropertyAbstractConstructorDeathTest.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>INPCPropertyAbstractConstructorDeathTest.tt</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <None Update="Types\INPCPropertyAbstractConstructorDeathTest.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>INPCPropertyAbstractConstructorDeathTest.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   
   <Import Project="..\.paket\Paket.Restore.targets" />

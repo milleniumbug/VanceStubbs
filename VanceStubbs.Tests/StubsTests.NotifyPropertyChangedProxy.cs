@@ -144,21 +144,6 @@ namespace VanceStubbs.Tests
                 Assert.Fail();
             }
 
-            [Test]
-            public void ConstructorParameterDeathTest()
-            {
-                var proxy = VanceStubbs.Stubs.NotifyPropertyChangedProxy<INPCPropertyAbstractConstructorDeathTest>();
-                proxy.PropertyChanged += (sender, args) =>
-                {
-                    if (args.PropertyName == nameof(proxy.GetSet))
-                    {
-                        Assert.Pass();
-                    }
-                };
-                proxy.GetSet = 42;
-                Assert.Fail();
-            }
-
             [Explicit]
             [Test]
             public void KillerTestInterfaces()
