@@ -127,11 +127,10 @@ namespace VanceStubbs
                 var staticConstructor = tb.DefineTypeInitializer();
                 var staticConstructorIl = staticConstructor.GetILGenerator();
 
-                var ev = type
+                var ev = t
                     .GetInterface(nameof(INotifyPropertyChanged))
                     .GetEvent(nameof(INotifyPropertyChanged.PropertyChanged));
-                var inpcField = ab.ImplementEventByDelegatingToANewField(tb, ev);
-
+                var inpcField = HasINPCImplemented(t) ? null : ab.ImplementEventByDelegatingToANewField(tb, ev);
                 foreach (var property in ab.AbstractPropertiesFor(t))
                 {
                     var staticComparer = ImplementNotifyProperty(tb, property, inpcField);
@@ -139,11 +138,13 @@ namespace VanceStubbs
                     {
                         staticConstructorIl.EmitCall(
                             OpCodes.Call,
-                            typeof(EqualityComparer<>).MakeGenericType(property.PropertyType).GetMethod("get_Default"),
+                            typeof(EqualityComparer<>).MakeGenericType(property.PropertyType)
+                                .GetMethod("get_Default"),
                             null);
                         staticConstructorIl.Emit(OpCodes.Stsfld, staticComparer);
                     }
                 }
+
                 staticConstructorIl.Emit(OpCodes.Ret);
                 return tb.CreateTypeInfo();
             });
@@ -213,21 +214,31 @@ namespace VanceStubbs
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldarg_1);
                 il.Emit(OpCodes.Stfld, field);
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldfld, inpcEventField);
-                il.Emit(OpCodes.Dup);
-                var label = il.DefineLabel();
-                il.Emit(OpCodes.Brtrue_S, label);
-                il.Emit(OpCodes.Pop);
-                il.Emit(OpCodes.Ret);
-                il.MarkLabel(label);
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldstr, property.Name);
-                il.Emit(OpCodes.Newobj, typeof(PropertyChangedEventArgs).GetConstructor(new[] { typeof(string) }));
-                il.EmitCall(
-                    OpCodes.Callvirt,
-                    typeof(PropertyChangedEventHandler).GetMethod(nameof(PropertyChangedEventHandler.Invoke)),
-                    null);
+                if (inpcEventField != null)
+                {
+                    RaiseEventByInvokingItDirectly(property, inpcEventField, il);
+                }
+                else
+                {
+                    var raiseEventMethod = tb.BaseType.GetMethod(
+                        "OnPropertyChanged",
+                        BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (raiseEventMethod == null)
+                    {
+                        raiseEventMethod = tb.BaseType.GetMethod(
+                            "RaisePropertyChanged",
+                            BindingFlags.NonPublic | BindingFlags.Instance);
+                    }
+
+                    if (raiseEventMethod == null)
+                    {
+                        throw new ArgumentException(
+                            "The class implements the event, but doesn't provide any recognisable method to raise it from a derived type.");
+                    }
+
+                    RaiseEventByCallingAnEventMethod(property, raiseEventMethod, il);
+                }
+
                 il.Emit(OpCodes.Ret);
             }
 
@@ -265,6 +276,70 @@ namespace VanceStubbs
                 il.Emit(OpCodes.Ret);
                 il.MarkLabel(label);
             }
+        }
+
+        private static void RaiseEventByCallingAnEventMethod(PropertyInfo property, MethodInfo method, ILGenerator il)
+        {
+            il.Emit(OpCodes.Ldarg_0);
+            var parameters = method.GetParameters();
+            if (parameters.Length == 1 && parameters[0].ParameterType == typeof(string))
+            {
+                il.Emit(OpCodes.Ldstr, property.Name);
+            }
+            else if (parameters.Length == 1 && parameters[0].GetType() == typeof(PropertyChangedEventArgs))
+            {
+                il.Emit(OpCodes.Ldstr, property.Name);
+                il.Emit(OpCodes.Newobj, typeof(PropertyChangedEventArgs).GetConstructor(new[] { typeof(string) }));
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+
+            var callOpcode = method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call;
+            il.EmitCall(callOpcode, method, null);
+        }
+
+        private static void RaiseEventByInvokingItDirectly(PropertyInfo property, FieldInfo inpcEventField, ILGenerator il)
+        {
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, inpcEventField);
+            il.Emit(OpCodes.Dup);
+            var label = il.DefineLabel();
+            il.Emit(OpCodes.Brtrue_S, label);
+            il.Emit(OpCodes.Pop);
+            il.Emit(OpCodes.Ret);
+            il.MarkLabel(label);
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldstr, property.Name);
+            il.Emit(OpCodes.Newobj, typeof(PropertyChangedEventArgs).GetConstructor(new[] { typeof(string) }));
+            il.EmitCall(
+                OpCodes.Callvirt,
+                typeof(PropertyChangedEventHandler).GetMethod(nameof(PropertyChangedEventHandler.Invoke)),
+                null);
+        }
+
+        private static IEnumerable<KeyValuePair<MethodInfo, MethodInfo>> InterfaceMapping(Type interfaceType, Type concreteType)
+        {
+            var mapping = concreteType.GetInterfaceMap(interfaceType);
+            for (int i = 0; i < mapping.InterfaceMethods.Length; i++)
+            {
+                yield return new KeyValuePair<MethodInfo, MethodInfo>(mapping.InterfaceMethods[i], mapping.TargetMethods[i]);
+            }
+        }
+
+        private static bool HasINPCImplemented(Type type)
+        {
+            if (type.IsInterface)
+            {
+                return false;
+            }
+
+            var ev = typeof(INotifyPropertyChanged)
+                .GetEvent(nameof(INotifyPropertyChanged.PropertyChanged));
+            return InterfaceMapping(typeof(INotifyPropertyChanged), type)
+                .Where(kvp => kvp.Key == ev.AddMethod || kvp.Key == ev.RemoveMethod)
+                .All(kvp => !kvp.Value.IsAbstract);
         }
 
         private static void ImplementGetter(
