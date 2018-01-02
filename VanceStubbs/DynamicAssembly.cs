@@ -40,9 +40,9 @@ namespace VanceStubbs
 
         public ModuleBuilder Module { get; }
 
-        public TypeInfo ImplementAbstractMethods(string prefix, Type abstractType, Action<MethodInfo, ILGenerator> implementer)
+        public TypeInfo ImplementAbstractMethods(string name, Type abstractType, Action<MethodInfo, ILGenerator> implementer, bool eventsAsFields = true)
         {
-            var tb = this.Module.DefineType(prefix + abstractType.FullName, TypeAttributes.Class);
+            var tb = this.Module.DefineType(name, TypeAttributes.Class);
             if (abstractType.IsInterface)
             {
                 tb.AddInterfaceImplementation(abstractType);
@@ -52,12 +52,15 @@ namespace VanceStubbs
                 tb.SetParent(abstractType);
             }
 
-            foreach (var eventInfo in this.AbstractEventsFor(abstractType))
+            if (eventsAsFields)
             {
-                this.ImplementEventByDelegatingToANewField(tb, eventInfo);
+                foreach (var eventInfo in this.AbstractEventsFor(abstractType))
+                {
+                    this.ImplementEventByDelegatingToANewField(tb, eventInfo);
+                }
             }
 
-            foreach (var method in this.AbstractMethodsFor(abstractType, skipEventMethods: true))
+            foreach (var method in this.AbstractMethodsFor(abstractType, skipEventMethods: eventsAsFields))
             {
                 var methodOverride = tb.DefineMethod(
                     method.Name,
@@ -227,6 +230,11 @@ namespace VanceStubbs
         public object ActivateInstance(Type type, object parameter)
         {
             return Activator.CreateInstance(type, parameter);
+        }
+
+        public object ActivateInstance(Type type, object parameter1, object parameter2)
+        {
+            return Activator.CreateInstance(type, parameter1, parameter2);
         }
 
         // DEBUG METHOD ONLY
