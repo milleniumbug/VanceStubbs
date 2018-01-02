@@ -27,7 +27,18 @@ namespace VanceStubbs.Tests
             Func<ISimpleInterface, ISimpleInterface> f = VanceStubbs.ProxyFactory
                 .For<ISimpleInterface>()
                 .Stateless()
-                .WithPreExitHandler((ISimpleInterface @this, object o) => o is int x ? x + 42 : o)
+                .WithPreExitHandler((ISimpleInterface @this, object o) =>
+                {
+                    var x = o as int?;
+                    if (x.HasValue)
+                    {
+                        return x.Value + 42;
+                    }
+                    else
+                    {
+                        return o;
+                    }
+                })
                 .WithPostEntryHandler((ISimpleInterface @this, object[] parameters) => { })
                 .Create();
             var v = new SimpleInterfaceImplementation();

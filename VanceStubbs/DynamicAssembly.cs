@@ -40,6 +40,68 @@ namespace VanceStubbs
 
         public ModuleBuilder Module { get; }
 
+        public static void UnrollParameterLoading(ILGenerator il, int start, int end)
+        {
+            int i = start;
+            if (i == 0 && i <= end)
+            {
+                il.Emit(OpCodes.Ldarg_0);
+                ++i;
+            }
+
+            if (i == 1 && i <= end)
+            {
+                il.Emit(OpCodes.Ldarg_1);
+                ++i;
+            }
+
+            if (i == 2 && i <= end)
+            {
+                il.Emit(OpCodes.Ldarg_2);
+                ++i;
+            }
+
+            if (i == 3 && i <= end)
+            {
+                il.Emit(OpCodes.Ldarg_3);
+                ++i;
+            }
+
+            for (; i <= Math.Min(end, byte.MaxValue); ++i)
+            {
+                il.Emit(OpCodes.Ldarg_S, (byte)i);
+            }
+
+            for (; i <= Math.Min(end, ushort.MaxValue); ++i)
+            {
+                il.Emit(OpCodes.Ldarg, (short)i);
+            }
+        }
+
+        public static void TypeErase(ILGenerator il, Type actualType)
+        {
+            if (actualType == typeof(void))
+            {
+                il.Emit(OpCodes.Ldnull);
+            }
+            else if (actualType.IsValueType)
+            {
+                il.Emit(OpCodes.Box, actualType);
+            }
+        }
+
+        public static void TypeRestore(ILGenerator il, Type actualType)
+        {
+            if (actualType == typeof(void))
+            {
+                il.Emit(OpCodes.Pop);
+            }
+            else if (actualType.IsValueType)
+            {
+                il.Emit(OpCodes.Unbox_Any, actualType);
+            }
+        }
+
         public TypeInfo ImplementAbstractMethods(string name, Type abstractType, Action<MethodInfo, ILGenerator> implementer, bool eventsAsFields = true)
         {
             var tb = this.Module.DefineType(name, TypeAttributes.Class);
@@ -52,17 +114,24 @@ namespace VanceStubbs
                 tb.SetParent(abstractType);
             }
 
+            this.ImplementAbstractMethods(tb, abstractType, implementer, eventsAsFields);
+
+            return tb.CreateTypeInfo();
+        }
+
+        public void ImplementAbstractMethods(TypeBuilder newType, Type abstractType, Action<MethodInfo, ILGenerator> implementer, bool eventsAsFields = true)
+        {
             if (eventsAsFields)
             {
                 foreach (var eventInfo in this.AbstractEventsFor(abstractType))
                 {
-                    this.ImplementEventByDelegatingToANewField(tb, eventInfo);
+                    this.ImplementEventByDelegatingToANewField(newType, eventInfo);
                 }
             }
 
             foreach (var method in this.AbstractMethodsFor(abstractType, skipEventMethods: eventsAsFields))
             {
-                var methodOverride = tb.DefineMethod(
+                var methodOverride = newType.DefineMethod(
                     method.Name,
                     method.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot),
                     method.CallingConvention,
@@ -70,8 +139,6 @@ namespace VanceStubbs
                     method.GetParameters().Select(p => p.ParameterType).ToArray());
                 implementer(method, methodOverride.GetILGenerator());
             }
-
-            return tb.CreateTypeInfo();
         }
 
         public FieldInfo ImplementEventByDelegatingToANewField(TypeBuilder tb, EventInfo e)
@@ -173,31 +240,8 @@ namespace VanceStubbs
                     CallingConventions.HasThis,
                     parameters.Select(p => p.ParameterType).ToArray());
                 var il = constructorOverride.GetILGenerator();
-                il.Emit(OpCodes.Ldarg_0);
-                if (parameters.Length >= 1)
-                {
-                    il.Emit(OpCodes.Ldarg_1);
-                }
-
-                if (parameters.Length >= 2)
-                {
-                    il.Emit(OpCodes.Ldarg_2);
-                }
-
-                if (parameters.Length >= 3)
-                {
-                    il.Emit(OpCodes.Ldarg_3);
-                }
-
-                for (int i = 4; i <= Math.Min(parameters.Length, byte.MaxValue); ++i)
-                {
-                    il.Emit(OpCodes.Ldarg_S, (byte)i);
-                }
-
-                for (int i = 256; i <= Math.Min(parameters.Length, ushort.MaxValue); ++i)
-                {
-                    il.Emit(OpCodes.Ldarg, (short)i);
-                }
+                var length = parameters.Length;
+                UnrollParameterLoading(il, 0, length);
 
                 il.Emit(OpCodes.Call, constructor);
                 il.Emit(OpCodes.Ret);
