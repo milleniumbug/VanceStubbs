@@ -166,9 +166,9 @@ namespace VanceStubbs
                 ab.ImplementAbstractMethods(tb, abstractType, ImplementAsDecorator, false);
                 var typeInfo = tb.CreateTypeInfo();
                 var runtimePostEntryField = typeInfo.GetField(nameof(this.postEntry), BindingFlags.Static | BindingFlags.NonPublic);
-                runtimePostEntryField.SetValue(typeInfo, this.postEntry);
+                runtimePostEntryField?.SetValue(typeInfo, this.postEntry);
                 var runtimePreExitField = typeInfo.GetField(nameof(this.preExit), BindingFlags.Static | BindingFlags.NonPublic);
-                runtimePreExitField.SetValue(typeInfo, this.preExit);
+                runtimePreExitField?.SetValue(typeInfo, this.preExit);
                 return (target, state) => (TWrappedType)ab.ActivateInstance(typeInfo, target, state);
 
                 void ImplementAsDecorator(MethodInfo method, ILGenerator il)

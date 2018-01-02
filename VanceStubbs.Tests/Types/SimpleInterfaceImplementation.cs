@@ -1,6 +1,6 @@
 namespace VanceStubbs.Tests.Types
 {
-    internal class SimpleInterfaceImplementation : ISimpleInterface
+    public class SimpleInterfaceImplementation : ISimpleInterface
     {
         /// <inheritdoc />
         public void DoA()

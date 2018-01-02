@@ -20,21 +20,17 @@ namespace Sandbox
 
             try
             {
-                var proxy = VanceStubbs.Stubs
-                    .NotifyPropertyChangedProxy<AbstractPropertyConcreteINPCEvent>();
-
-                proxy.GetSet = 4;
-                proxy.PropertyChanged += (sender, args) =>
-                {
-                    if (args.PropertyName == nameof(proxy.GetSet))
-                    {
-                        Assert.Pass();
-                    }
-                };
-                proxy.GetSet = 16;
-                Assert.Fail();
+                Func<ISimpleInterface, object, ISimpleInterface> f = VanceStubbs.ProxyFactory
+                    .For<ISimpleInterface>()
+                    .WithState<object>()
+                    .WithPreExitHandler((ISimpleInterface @this, object state, object o) => o is int x ? x + 42 : o)
+                    .WithPostEntryHandler((ISimpleInterface @this, object state, object[] parameters) => { })
+                    .Create();
+                var v = new SimpleInterfaceImplementation();
+                var proxy = f(v, null);
+                //proxy.ReturnInt();
             }
-            catch (Exception)
+            finally
             {
                 DynamicAssembly.Default.Save();
                 if (peverifyPath != null)
@@ -46,8 +42,6 @@ namespace Sandbox
                         UseShellExecute = false
                     });
                 }
-
-                throw;
             }
         }
     }

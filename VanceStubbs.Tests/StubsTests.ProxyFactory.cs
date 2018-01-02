@@ -22,6 +22,20 @@ namespace VanceStubbs.Tests
         }
 
         [Test]
+        public void BasicStatefulObjectProxy()
+        {
+            Func<ISimpleInterface, object, ISimpleInterface> f = VanceStubbs.ProxyFactory
+                .For<ISimpleInterface>()
+                .WithState<object>()
+                .WithPreExitHandler((ISimpleInterface @this, object state, object o) => o is int x ? x + 42 : o)
+                .WithPostEntryHandler((ISimpleInterface @this, object state, object[] parameters) => { })
+                .Create();
+            var v = new SimpleInterfaceImplementation();
+            var proxy = f(v, null);
+            Assert.AreEqual(41, proxy.ReturnInt());
+        }
+
+        [Test]
         public void BasicStatelessProxy()
         {
             Func<ISimpleInterface, ISimpleInterface> f = VanceStubbs.ProxyFactory
@@ -29,6 +43,7 @@ namespace VanceStubbs.Tests
                 .Stateless()
                 .WithPreExitHandler((ISimpleInterface @this, object o) =>
                 {
+                    Console.WriteLine("lol");
                     var x = o as int?;
                     if (x.HasValue)
                     {
