@@ -231,9 +231,9 @@ namespace VanceStubbs
                         il.Emit(OpCodes.Ldarg_0);
                         il.Emit(OpCodes.Ldfld, stateField);
                         il.Emit(OpCodes.Ldloc_1);
-                        DynamicAssembly.TypeErase(il, stateField.FieldType);
+                        DynamicAssembly.TypeErase(il, method.ReturnType);
                         il.EmitCall(OpCodes.Callvirt, preExitDelegateField.FieldType.GetMethod("Invoke"), null);
-                        DynamicAssembly.TypeRestore(il, stateField.FieldType);
+                        DynamicAssembly.TypeRestore(il, method.ReturnType);
                     }
 
                     il.Emit(OpCodes.Ret);
