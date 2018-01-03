@@ -188,14 +188,11 @@ namespace VanceStubbs
 
                         for (int i = 0; i < length; ++i)
                         {
+                            il.Emit(OpCodes.Dup);
                             il.Emit(OpCodes.Ldc_I4, i);
                             il.Emit(OpCodes.Ldarg, (short)(i + 1));
                             DynamicAssembly.TypeErase(il, parameters[i].ParameterType);
                             il.Emit(OpCodes.Stelem_Ref);
-                            if (i < length - 1)
-                            {
-                                il.Emit(OpCodes.Dup);
-                            }
                         }
 
                         il.Emit(OpCodes.Stloc_0);
