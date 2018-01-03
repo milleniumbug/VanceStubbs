@@ -1,6 +1,7 @@
 namespace Sandbox
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using NUnit.Framework;
@@ -20,15 +21,27 @@ namespace Sandbox
 
             try
             {
-                Func<ISimpleInterface, ISimpleInterface> f = VanceStubbs.ProxyFactory
+                Func<ISimpleInterface, List<string>, ISimpleInterface> f = VanceStubbs.ProxyFactory
                     .For<ISimpleInterface>()
-                    .Stateless()
-                    .WithPreExitHandler((ISimpleInterface @this, object o) => o is int x ? x + 42 : o)
-                    .WithPostEntryHandler((ISimpleInterface @this, object[] parameters) => { })
+                    .WithState<List<string>>()
+                    .WithPostEntryHandler((target, state, parameters) => state.Add("Out1"))
+                    .WithPostEntryHandler((target, state, parameters) => state.Add("Out2"))
+                    .WithPreExitHandler((target, state, ret) =>
+                    {
+                        state.Add("In1");
+                        return ret;
+                    })
+                    .WithPreExitHandler((target, state, ret) =>
+                    {
+                        state.Add("In2");
+                        return ret;
+                    })
                     .Create();
                 var v = new SimpleInterfaceImplementation();
-                var proxy = f(v);
-                Console.WriteLine(proxy.ReturnInt());
+                var s = new List<string>();
+                var proxy = f(v, s);
+                v.ReturnInt();
+                CollectionAssert.AreEqual(new[] { "Out2", "Out1", "In1", "In2" }, s);
             }
             finally
             {

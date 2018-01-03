@@ -47,7 +47,7 @@ namespace VanceStubbs.Tests
                 .Create();
             var v = new SimpleInterfaceImplementation();
             var proxy = f(v);
-            Assert.AreEqual(41, v.ReturnInt());
+            Assert.AreEqual(41, proxy.ReturnInt());
         }
 
         [Test]
@@ -59,7 +59,7 @@ namespace VanceStubbs.Tests
                 .Create();
             var v = new SimpleInterfaceImplementation();
             var proxy = f(v);
-            Assert.AreEqual(-1, v.ReturnInt());
+            Assert.AreEqual(-1, proxy.ReturnInt());
         }
 
         [Test]
@@ -84,8 +84,8 @@ namespace VanceStubbs.Tests
             var v = new SimpleInterfaceImplementation();
             var s = new List<string>();
             var proxy = f(v, s);
-            Assert.AreEqual(-1, v.ReturnInt());
-            CollectionAssert.AreEqual(new[]{ "Out2", "Out1", "In1", "In2" }, s);
+            Assert.AreEqual(-1, proxy.ReturnInt());
+            CollectionAssert.AreEqual(new[] { "Out2", "Out1", "In1", "In2" }, s);
         }
     }
 }
