@@ -7,5 +7,7 @@ namespace VanceStubbs.Tests.Types
         void DoB(int x);
 
         int ReturnInt();
+
+        int PassThrough(int x);
     }
 }

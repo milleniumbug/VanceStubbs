@@ -63,6 +63,25 @@ namespace VanceStubbs.Tests
         }
 
         [Test]
+        public void ParameterModification()
+        {
+            Func<ISimpleInterface, int, ISimpleInterface> f = VanceStubbs.ProxyFactory
+                .For<ISimpleInterface>()
+                .WithState<int>()
+                .WithPostEntryHandler((ISimpleInterface @this, int state, object[] parameters) =>
+                {
+                    if (parameters.Length >= 1 && parameters[0] is int x)
+                    {
+                        parameters[0] = x + 1;
+                    }
+                })
+                .Create();
+            var v = new SimpleInterfaceImplementation();
+            var proxy = f(v, 0);
+            Assert.AreEqual(51, proxy.PassThrough(50));
+        }
+
+        [Test]
         public void Chaining()
         {
             Func<ISimpleInterface, List<string>, ISimpleInterface> f = VanceStubbs.ProxyFactory

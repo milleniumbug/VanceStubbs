@@ -17,5 +17,11 @@ namespace VanceStubbs.Tests.Types
         {
             return -1;
         }
+
+        /// <inheritdoc />
+        public int PassThrough(int x)
+        {
+            return x;
+        }
     }
 }
