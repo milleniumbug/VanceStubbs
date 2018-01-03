@@ -11,11 +11,11 @@ namespace VanceStubbs.Tests
         [Test]
         public void BasicStatefulProxy()
         {
-            Func<ISimpleInterface, int, ISimpleInterface> f = VanceStubbs.ProxyFactory
+            var f = VanceStubbs.ProxyFactory
                 .For<ISimpleInterface>()
                 .WithState<int>()
-                .WithPreExitHandler((ISimpleInterface @this, int state, object o) => o is int x ? x + state : o)
-                .WithPostEntryHandler((ISimpleInterface @this, int state, object[] parameters) => { })
+                .WithPreExitHandler((target, state, o) => o is int x ? x + state : o)
+                .WithPostEntryHandler((target, state, parameters) => { })
                 .Create();
             var v = new SimpleInterfaceImplementation();
             var proxy = f(v, 42);
@@ -25,11 +25,11 @@ namespace VanceStubbs.Tests
         [Test]
         public void BasicStatefulObjectProxy()
         {
-            Func<ISimpleInterface, object, ISimpleInterface> f = VanceStubbs.ProxyFactory
+            var f = VanceStubbs.ProxyFactory
                 .For<ISimpleInterface>()
                 .WithState<object>()
-                .WithPreExitHandler((ISimpleInterface @this, object state, object o) => o is int x ? x + 42 : o)
-                .WithPostEntryHandler((ISimpleInterface @this, object state, object[] parameters) => { })
+                .WithPreExitHandler((target, state, o) => o is int x ? x + 42 : o)
+                .WithPostEntryHandler((target, state, parameters) => { })
                 .Create();
             var v = new SimpleInterfaceImplementation();
             var proxy = f(v, null);
@@ -39,11 +39,11 @@ namespace VanceStubbs.Tests
         [Test]
         public void BasicStatelessProxy()
         {
-            Func<ISimpleInterface, ISimpleInterface> f = VanceStubbs.ProxyFactory
+            var f = VanceStubbs.ProxyFactory
                 .For<ISimpleInterface>()
                 .Stateless()
-                .WithPreExitHandler((ISimpleInterface @this, object o) => o is int x ? x + 42 : o)
-                .WithPostEntryHandler((ISimpleInterface @this, object[] parameters) => { })
+                .WithPreExitHandler((target, o) => o is int x ? x + 42 : o)
+                .WithPostEntryHandler((target, parameters) => { })
                 .Create();
             var v = new SimpleInterfaceImplementation();
             var proxy = f(v);
@@ -53,7 +53,7 @@ namespace VanceStubbs.Tests
         [Test]
         public void Noop()
         {
-            Func<ISimpleInterface, ISimpleInterface> f = VanceStubbs.ProxyFactory
+            var f = VanceStubbs.ProxyFactory
                 .For<ISimpleInterface>()
                 .Stateless()
                 .Create();
@@ -65,10 +65,10 @@ namespace VanceStubbs.Tests
         [Test]
         public void ParameterModification()
         {
-            Func<ISimpleInterface, int, ISimpleInterface> f = VanceStubbs.ProxyFactory
+            var f = VanceStubbs.ProxyFactory
                 .For<ISimpleInterface>()
                 .WithState<int>()
-                .WithPostEntryHandler((ISimpleInterface @this, int state, object[] parameters) =>
+                .WithPostEntryHandler((target, state, parameters) =>
                 {
                     if (parameters.Length >= 1 && parameters[0] is int x)
                     {
@@ -84,7 +84,7 @@ namespace VanceStubbs.Tests
         [Test]
         public void Chaining()
         {
-            Func<ISimpleInterface, List<string>, ISimpleInterface> f = VanceStubbs.ProxyFactory
+            var f = VanceStubbs.ProxyFactory
                 .For<ISimpleInterface>()
                 .WithState<List<string>>()
                 .WithPostEntryHandler((target, state, parameters) => state.Add("Out1"))
