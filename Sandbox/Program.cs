@@ -20,15 +20,15 @@ namespace Sandbox
 
             try
             {
-                Func<ISimpleInterface, object, ISimpleInterface> f = VanceStubbs.ProxyFactory
+                Func<ISimpleInterface, ISimpleInterface> f = VanceStubbs.ProxyFactory
                     .For<ISimpleInterface>()
-                    .WithState<object>()
-                    .WithPreExitHandler((ISimpleInterface @this, object state, object o) => o is int x ? x + 42 : o)
-                    .WithPostEntryHandler((ISimpleInterface @this, object state, object[] parameters) => { })
+                    .Stateless()
+                    .WithPreExitHandler((ISimpleInterface @this, object o) => o is int x ? x + 42 : o)
+                    .WithPostEntryHandler((ISimpleInterface @this, object[] parameters) => { })
                     .Create();
                 var v = new SimpleInterfaceImplementation();
-                var proxy = f(v, null);
-                //proxy.ReturnInt();
+                var proxy = f(v);
+                Console.WriteLine(proxy.ReturnInt());
             }
             finally
             {
