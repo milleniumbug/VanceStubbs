@@ -12,7 +12,7 @@ namespace VanceStubbs
 
     internal class DynamicAssembly
     {
-        public static readonly DynamicAssembly Default = new DynamicAssembly(debugMode: false);
+        public static readonly DynamicAssembly Default = new DynamicAssembly(debugMode: true);
 
         private readonly bool debugMode;
 
