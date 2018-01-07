@@ -8,7 +8,7 @@ namespace VanceStubbs
     using System.Reflection;
     using System.Reflection.Emit;
 
-    public static class ProxyFactory
+    public static class Proxies
     {
         private static readonly ConcurrentDictionary<Type, TypeInfo> InpcProxies = new ConcurrentDictionary<Type, TypeInfo>();
 

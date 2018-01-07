@@ -20,7 +20,7 @@ namespace Sandbox
 
             try
             {
-                Func<ISimpleInterface, int, ISimpleInterface> f = VanceStubbs.ProxyFactory
+                Func<ISimpleInterface, int, ISimpleInterface> f = VanceStubbs.Proxies
                     .For<ISimpleInterface>()
                     .WithState<int>()
                     .WithPostEntryHandler((ISimpleInterface @this, int state, object[] parameters) =>

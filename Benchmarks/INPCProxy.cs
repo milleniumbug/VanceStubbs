@@ -10,7 +10,7 @@ namespace Benchmarks
         [Benchmark]
         public void Proxy()
         {
-            var a = VanceStubbs.ProxyFactory.NotifyPropertyChangedProxy<INotifyManyProperties>();
+            var a = VanceStubbs.Proxies.NotifyPropertyChangedProxy<INotifyManyProperties>();
             a.PropertyChanged += (sender, args) => { };
             for (int i = 0; i < 100; i++)
             {
