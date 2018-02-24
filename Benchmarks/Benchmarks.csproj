@@ -53,11 +53,20 @@
     <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\VanceStubbs\VanceStubbs.csproj">
+      <Project>{abbade43-1788-4fbd-a5b0-2faaf47fe321}</Project>
+      <Name>VanceStubbs</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="BenchmarkDotNet.Artifacts\" />
+  </ItemGroup>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7' Or $(TargetFrameworkVersion) == 'v4.7.1')">
       <ItemGroup>
         <Reference Include="BenchmarkDotNet">
-          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet\0.10.11\lib\net46\BenchmarkDotNet.dll</HintPath>
+          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet\0.10.12\lib\net46\BenchmarkDotNet.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -66,7 +75,7 @@
     <When Condition="$(TargetFrameworkIdentifier) == '.NETCoreApp' And $(TargetFrameworkVersion) == 'v1.1'">
       <ItemGroup>
         <Reference Include="BenchmarkDotNet">
-          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet\0.10.11\lib\netcoreapp1.1\BenchmarkDotNet.dll</HintPath>
+          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet\0.10.12\lib\netcoreapp1.1\BenchmarkDotNet.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -75,7 +84,7 @@
     <When Condition="$(TargetFrameworkIdentifier) == '.NETCoreApp' And $(TargetFrameworkVersion) == 'v2.0'">
       <ItemGroup>
         <Reference Include="BenchmarkDotNet">
-          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet\0.10.11\lib\netcoreapp2.0\BenchmarkDotNet.dll</HintPath>
+          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet\0.10.12\lib\netcoreapp2.0\BenchmarkDotNet.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -89,7 +98,7 @@
           <Paket>True</Paket>
         </Reference>
         <Reference Include="BenchmarkDotNet.Core">
-          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet.core\0.10.11\lib\net46\BenchmarkDotNet.Core.dll</HintPath>
+          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet.core\0.10.12\lib\net46\BenchmarkDotNet.Core.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -98,7 +107,7 @@
     <When Condition="$(TargetFrameworkIdentifier) == '.NETCoreApp' And $(TargetFrameworkVersion) == 'v1.1'">
       <ItemGroup>
         <Reference Include="BenchmarkDotNet.Core">
-          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet.core\0.10.11\lib\netcoreapp1.1\BenchmarkDotNet.Core.dll</HintPath>
+          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet.core\0.10.12\lib\netcoreapp1.1\BenchmarkDotNet.Core.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -107,7 +116,7 @@
     <When Condition="$(TargetFrameworkIdentifier) == '.NETCoreApp' And $(TargetFrameworkVersion) == 'v2.0'">
       <ItemGroup>
         <Reference Include="BenchmarkDotNet.Core">
-          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet.core\0.10.11\lib\netcoreapp2.0\BenchmarkDotNet.Core.dll</HintPath>
+          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet.core\0.10.12\lib\netcoreapp2.0\BenchmarkDotNet.Core.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -118,7 +127,7 @@
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7' Or $(TargetFrameworkVersion) == 'v4.7.1')">
       <ItemGroup>
         <Reference Include="BenchmarkDotNet.Toolchains.Roslyn">
-          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet.toolchains.roslyn\0.10.11\lib\net46\BenchmarkDotNet.Toolchains.Roslyn.dll</HintPath>
+          <HintPath>C:\Users\milleniumbug\.nuget\packages\benchmarkdotnet.toolchains.roslyn\0.10.12\lib\net46\BenchmarkDotNet.Toolchains.Roslyn.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -126,21 +135,12 @@
     </When>
   </Choose>
   <ItemGroup>
-    <Analyzer Include="C:\Users\milleniumbug\.nuget\packages\microsoft.codeanalysis.analyzers\1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll">
+    <Analyzer Include="C:\Users\milleniumbug\.nuget\packages\microsoft.codeanalysis.analyzers\2.6.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll">
       <Paket>True</Paket>
     </Analyzer>
-    <Analyzer Include="C:\Users\milleniumbug\.nuget\packages\microsoft.codeanalysis.analyzers\1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll">
+    <Analyzer Include="C:\Users\milleniumbug\.nuget\packages\microsoft.codeanalysis.analyzers\2.6.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll">
       <Paket>True</Paket>
     </Analyzer>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\VanceStubbs\VanceStubbs.csproj">
-      <Project>{abbade43-1788-4fbd-a5b0-2faaf47fe321}</Project>
-      <Name>VanceStubbs</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="BenchmarkDotNet.Artifacts\" />
   </ItemGroup>
   <Choose>
     <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7' Or $(TargetFrameworkVersion) == 'v4.7.1')) Or ($(TargetFrameworkIdentifier) == '.NETCoreApp' And $(TargetFrameworkVersion) == 'v1.1')">
@@ -2068,7 +2068,7 @@
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7' Or $(TargetFrameworkVersion) == 'v4.7.1')">
       <ItemGroup>
         <Reference Include="System.Xml.ReaderWriter">
-          <HintPath>C:\Users\milleniumbug\.nuget\packages\system.xml.readerwriter\4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
+          <HintPath>C:\Users\milleniumbug\.nuget\packages\system.xml.readerwriter\4.3.1\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -2077,7 +2077,7 @@
     <When Condition="$(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0')">
       <ItemGroup>
         <Reference Include="System.Xml.ReaderWriter">
-          <HintPath>C:\Users\milleniumbug\.nuget\packages\system.xml.readerwriter\4.3.0\lib\netstandard1.3\System.Xml.ReaderWriter.dll</HintPath>
+          <HintPath>C:\Users\milleniumbug\.nuget\packages\system.xml.readerwriter\4.3.1\lib\netstandard1.3\System.Xml.ReaderWriter.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -2086,7 +2086,7 @@
     <When Condition="$(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0')">
       <ItemGroup>
         <Reference Include="System.Xml.ReaderWriter">
-          <HintPath>C:\Users\milleniumbug\.nuget\packages\system.xml.readerwriter\4.3.0\ref\netstandard1.3\System.Xml.ReaderWriter.dll</HintPath>
+          <HintPath>C:\Users\milleniumbug\.nuget\packages\system.xml.readerwriter\4.3.1\ref\netstandard1.3\System.Xml.ReaderWriter.dll</HintPath>
           <Private>False</Private>
           <Paket>True</Paket>
         </Reference>
