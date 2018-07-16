@@ -1,0 +1,10 @@
+﻿type project
+include-pdbs true
+title VanceStubbs
+projectUrl https://github.com/milleniumbug/VanceStubbs
+licenseUrl http://opensource.org/licenses/MIT
+description
+  A Reflection.Emit based library that provides proxy types, in particular, INPC proxies, and AOP-style "call function before entry"
+
+files
+  bin/Release/netstandard2.0/* ==> lib/netstandard2.0

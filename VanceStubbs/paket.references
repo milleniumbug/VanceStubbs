@@ -1,4 +1,5 @@
 System.Reflection.Emit
+Microsoft.CSharp
 
 group Analyzers
   StyleCop.Analyzers
