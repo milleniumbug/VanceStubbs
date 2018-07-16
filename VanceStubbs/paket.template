@@ -6,6 +6,10 @@ licenseUrl http://opensource.org/licenses/MIT
 description
   A Reflection.Emit based library that provides proxy types, in particular, INPC proxies, and AOP-style "call function before entry"
 
+dependencies
+  Microsoft.CSharp >= 4.4.1
+  System.Reflection.Emit >= 4.3.0
+
 files
   bin/Release/netstandard2.0/* ==> lib/netstandard2.0
 
