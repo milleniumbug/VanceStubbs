@@ -32,9 +32,13 @@ namespace VanceStubbs
 
         public object WhiteHole(Type type)
         {
-            var concreteType = this.whiteholes.GetOrAdd(type, t => this.factory.Assembly.ImplementAbstractMethods("WhiteHole." + t.FullName, t, ImplementAsThrowing));
+            var concreteType = this.WhiteHoleType(type);
             return this.factory.Assembly.ActivateInstance(concreteType);
+        }
 
+        public Type WhiteHoleType(Type type)
+        {
+            return this.whiteholes.GetOrAdd(type, t => this.factory.Assembly.ImplementAbstractMethods("WhiteHole." + t.FullName, t, ImplementAsThrowing));
             void ImplementAsThrowing(MethodInfo originalMethod, ILGenerator il)
             {
                 il.ThrowException(typeof(NotImplementedException));
@@ -48,8 +52,13 @@ namespace VanceStubbs
 
         public object BlackHole(Type type)
         {
-            var concreteType = this.blackholes.GetOrAdd(type, t => this.factory.Assembly.ImplementAbstractMethods("BlackHole." + t.FullName, t, ImplementAsReturnDefault));
+            Type concreteType = this.BlackHoleType(type);
             return this.factory.Assembly.ActivateInstance(concreteType);
+        }
+
+        public Type BlackHoleType(Type type)
+        {
+            return this.blackholes.GetOrAdd(type, t => this.factory.Assembly.ImplementAbstractMethods("BlackHole." + t.FullName, t, ImplementAsReturnDefault));
 
             void ImplementAsReturnDefault(MethodInfo originalMethod, ILGenerator il)
             {

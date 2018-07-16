@@ -16,11 +16,15 @@ namespace VanceStubbs
 
         private dynamic dispatcher;
 
-        private Cache<Type, int> lookupCache;
-
-        private Cache<Type, Type> abstractTypeCache;
+        private ICache<Type, Type> abstractTypeCache;
 
         private readonly DynamicAssembly assembly;
+
+        public TypeDictionary(IEnumerable<KeyValuePair<Type, TValue>> source)
+            : this(source, new Factory())
+        {
+
+        }
 
         internal TypeDictionary(IEnumerable<KeyValuePair<Type, TValue>> source, Factory factory)
         {
@@ -74,10 +78,19 @@ namespace VanceStubbs
             this.dispatcher = Activator.CreateInstance(dispatcherType);
             this.underlyingCollection = underlyingCollection.AsReadOnly();
             this.originalTypes = originalTypes.AsReadOnly();
+            this.abstractTypeCache = new TypeFactoryCache<Type>((fac, t) =>
+            {
+                return fac.OfStubs.BlackHoleType(t);
+            });
         }
 
         private int Dispatch(Type key)
         {
+            if (key.IsAbstract || key.IsInterface)
+            {
+                key = this.abstractTypeCache.Get(key);
+            }
+
             dynamic dummy = FormatterServices.GetUninitializedObject(key);
             return this.dispatcher.Dispatch(dummy);
         }
