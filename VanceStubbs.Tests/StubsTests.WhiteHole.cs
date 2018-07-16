@@ -14,7 +14,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void InterfaceListGeneric()
             {
-                IList<int> inst = VanceStubbs.Stubs.WhiteHole<IList<int>>();
+                IList<int> inst = VanceStubbs.Stubs.Factory.WhiteHole<IList<int>>();
                 Assert.Throws<NotImplementedException>(() =>
                 {
                     var c = inst.Count;
@@ -32,7 +32,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void AbstractClass()
             {
-                Stream inst = VanceStubbs.Stubs.WhiteHole<Stream>();
+                Stream inst = VanceStubbs.Stubs.Factory.WhiteHole<Stream>();
                 Assert.Throws<NotImplementedException>(() =>
                 {
                     var c = inst.CanRead;
@@ -42,7 +42,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void DontOverrideNonAbstract()
             {
-                AbstractPropertyConcreteINPCEvent inst = VanceStubbs.Stubs.WhiteHole<AbstractPropertyConcreteINPCEvent>();
+                AbstractPropertyConcreteINPCEvent inst = VanceStubbs.Stubs.Factory.WhiteHole<AbstractPropertyConcreteINPCEvent>();
                 Assert.Throws<NotImplementedException>(() =>
                 {
                     var c = inst.Value;
@@ -54,7 +54,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void Event()
             {
-                IEvent e = VanceStubbs.Stubs.WhiteHole<IEvent>();
+                IEvent e = VanceStubbs.Stubs.Factory.WhiteHole<IEvent>();
                 Action a = () => { };
                 e.Lol += a;
                 e.Lol -= a;
@@ -63,7 +63,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void MultipleInstantiatedGenerics()
             {
-                IList<string> inst = VanceStubbs.Stubs.WhiteHole<IList<string>>();
+                IList<string> inst = VanceStubbs.Stubs.Factory.WhiteHole<IList<string>>();
                 Assert.Throws<NotImplementedException>(() =>
                 {
                     inst.RemoveAt(0);
@@ -73,7 +73,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void AllMethods()
             {
-                IAllMethods inst = VanceStubbs.Stubs.WhiteHole<IAllMethods>();
+                IAllMethods inst = VanceStubbs.Stubs.Factory.WhiteHole<IAllMethods>();
             }
         }
     }

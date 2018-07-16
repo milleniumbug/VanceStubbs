@@ -15,7 +15,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void Basic()
             {
-                var proxy = VanceStubbs.Proxies.NotifyPropertyChangedProxy<IGetSetNotifyProperty>();
+                var proxy = VanceStubbs.Proxies.Factory.NotifyPropertyChangedProxy<IGetSetNotifyProperty>();
                 proxy.PropertyChanged += (sender, args) =>
                 {
                     if (args.PropertyName == nameof(IGetSetNotifyProperty.Value))
@@ -30,7 +30,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void Advanced()
             {
-                var proxy = VanceStubbs.Proxies.NotifyPropertyChangedProxy<INotifyManyProperties>();
+                var proxy = VanceStubbs.Proxies.Factory.NotifyPropertyChangedProxy<INotifyManyProperties>();
                 proxy.PropertyChanged += (sender, args) =>
                 {
                     if (args.PropertyName == nameof(INotifyManyProperties.Long))
@@ -45,7 +45,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void ReferenceEquals()
             {
-                var proxy = VanceStubbs.Proxies
+                var proxy = VanceStubbs.Proxies.Factory
                     .NotifyPropertyChangedProxy<IGetSetNotifyPropertyGeneric<ObservableCollection<int>>>();
 
                 proxy.Value = new ObservableCollection<int>(new[] { 1, 2, 3 });
@@ -63,7 +63,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void Nullable()
             {
-                var proxy = VanceStubbs.Proxies
+                var proxy = VanceStubbs.Proxies.Factory
                     .NotifyPropertyChangedProxy<IGetSetNotifyPropertyGeneric<DateTime?>>();
 
                 proxy.Value = DateTime.MinValue;
@@ -81,7 +81,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void AbstractClassWithConcreteEvent()
             {
-                var proxy = VanceStubbs.Proxies
+                var proxy = VanceStubbs.Proxies.Factory
                     .NotifyPropertyChangedProxy<AbstractPropertyConcreteINPCEvent>();
 
                 proxy.GetSet = 4;
@@ -99,7 +99,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void AbstractClassWithAbstractEvent()
             {
-                var proxy = VanceStubbs.Proxies
+                var proxy = VanceStubbs.Proxies.Factory
                     .NotifyPropertyChangedProxy<AbstractPropertyAbstractINPCEvent>();
 
                 proxy.GetSet = 4;
@@ -117,7 +117,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void DoesntExtendINPC()
             {
-                var proxy = VanceStubbs.Proxies.NotifyPropertyChangedProxy<IGetSetProperty>();
+                var proxy = VanceStubbs.Proxies.Factory.NotifyPropertyChangedProxy<IGetSetProperty>();
                 ((INotifyPropertyChanged)proxy).PropertyChanged += (sender, args) =>
                 {
                     if (args.PropertyName == nameof(IGetSetProperty.Value))
@@ -132,7 +132,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void NonDefaultConstructible()
             {
-                var proxy = VanceStubbs.Proxies.NotifyPropertyChangedProxy<NonDefaultConstructibleAbstractPropertyConcreteINPCEvent>(1337);
+                var proxy = VanceStubbs.Proxies.Factory.NotifyPropertyChangedProxy<NonDefaultConstructibleAbstractPropertyConcreteINPCEvent>(1337);
                 proxy.PropertyChanged += (sender, args) =>
                 {
                     if (args.PropertyName == nameof(proxy.GetSet))
@@ -148,7 +148,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void ConstructorParameterDeathTest()
             {
-                var proxy = VanceStubbs.Proxies.NotifyPropertyChangedProxy<INPCPropertyAbstractConstructorDeathTest>(1337);
+                var proxy = VanceStubbs.Proxies.Factory.NotifyPropertyChangedProxy<INPCPropertyAbstractConstructorDeathTest>(1337);
                 proxy.PropertyChanged += (sender, args) =>
                 {
                     if (args.PropertyName == nameof(proxy.GetSet))
@@ -171,7 +171,7 @@ namespace VanceStubbs.Tests
                     .Where(t => t.IsInterface);
                 foreach (var type in types)
                 {
-                    var proxy = VanceStubbs.Proxies.NotifyPropertyChangedProxy(type);
+                    var proxy = VanceStubbs.Proxies.Factory.NotifyPropertyChangedProxy(type);
                 }
             }
         }

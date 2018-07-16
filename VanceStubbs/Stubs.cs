@@ -5,21 +5,37 @@ namespace VanceStubbs
     using System.Reflection;
     using System.Reflection.Emit;
 
-    public static class Stubs
+    public class Stubs
     {
-        private static readonly ConcurrentDictionary<Type, TypeInfo> Whiteholes = new ConcurrentDictionary<Type, TypeInfo>();
-        private static readonly ConcurrentDictionary<Type, TypeInfo> Blackholes = new ConcurrentDictionary<Type, TypeInfo>();
+        private static readonly Lazy<Stubs> factory = new Lazy<Stubs>(() => new Stubs(DynamicAssembly.Default));
 
-        public static TAbstract WhiteHole<TAbstract>()
+        private readonly DynamicAssembly ab;
+
+        private readonly ConcurrentDictionary<Type, TypeInfo> whiteholes = new ConcurrentDictionary<Type, TypeInfo>();
+
+        private readonly ConcurrentDictionary<Type, TypeInfo> blackholes = new ConcurrentDictionary<Type, TypeInfo>();
+
+        public static Stubs Factory => factory.Value;
+
+        public static T Undefined<T>()
         {
-            return (TAbstract)WhiteHole(typeof(TAbstract));
+            throw new NotImplementedException("Undefined<T>() was evaluated");
         }
 
-        public static object WhiteHole(Type type)
+        internal Stubs(DynamicAssembly assembly)
         {
-            var ab = DynamicAssembly.Default;
-            var concreteType = Whiteholes.GetOrAdd(type, t => ab.ImplementAbstractMethods("WhiteHole." + t.FullName, t, ImplementAsThrowing));
-            return ab.ActivateInstance(concreteType);
+            this.ab = assembly;
+        }
+
+        public TAbstract WhiteHole<TAbstract>()
+        {
+            return (TAbstract)this.WhiteHole(typeof(TAbstract));
+        }
+
+        public object WhiteHole(Type type)
+        {
+            var concreteType = this.whiteholes.GetOrAdd(type, t => this.ab.ImplementAbstractMethods("WhiteHole." + t.FullName, t, ImplementAsThrowing));
+            return this.ab.ActivateInstance(concreteType);
 
             void ImplementAsThrowing(MethodInfo originalMethod, ILGenerator il)
             {
@@ -27,21 +43,15 @@ namespace VanceStubbs
             }
         }
 
-        public static T Undefined<T>()
+        public TAbstract BlackHole<TAbstract>()
         {
-            throw new NotImplementedException("Undefined<T>() was evaluated");
+            return (TAbstract)this.BlackHole(typeof(TAbstract));
         }
 
-        public static TAbstract BlackHole<TAbstract>()
+        public object BlackHole(Type type)
         {
-            return (TAbstract)BlackHole(typeof(TAbstract));
-        }
-
-        public static object BlackHole(Type type)
-        {
-            var ab = DynamicAssembly.Default;
-            var concreteType = Blackholes.GetOrAdd(type, t => ab.ImplementAbstractMethods("BlackHole." + t.FullName, t, ImplementAsReturnDefault));
-            return ab.ActivateInstance(concreteType);
+            var concreteType = this.blackholes.GetOrAdd(type, t => this.ab.ImplementAbstractMethods("BlackHole." + t.FullName, t, ImplementAsReturnDefault));
+            return this.ab.ActivateInstance(concreteType);
 
             void ImplementAsReturnDefault(MethodInfo originalMethod, ILGenerator il)
             {

@@ -8,11 +8,22 @@ namespace VanceStubbs
     using System.Reflection;
     using System.Reflection.Emit;
 
-    public static class Proxies
+    public class Proxies
     {
-        private static readonly ConcurrentDictionary<Type, TypeInfo> InpcProxies = new ConcurrentDictionary<Type, TypeInfo>();
+        private static readonly Lazy<Proxies> factory = new Lazy<Proxies>(() => new Proxies(DynamicAssembly.Default));
 
-        public static ProxyBuilder<TWrappedType> For<TWrappedType>()
+        private readonly ConcurrentDictionary<Type, TypeInfo> inpcProxies = new ConcurrentDictionary<Type, TypeInfo>();
+
+        private DynamicAssembly ab;
+
+        internal Proxies(DynamicAssembly assembly)
+        {
+            this.ab = assembly;
+        }
+
+        public static Proxies Factory => factory.Value;
+
+        public ProxyBuilder<TWrappedType> For<TWrappedType>()
         {
             var type = typeof(TWrappedType);
             if (!type.IsInterface)
@@ -20,20 +31,19 @@ namespace VanceStubbs
                 throw new ArgumentException("the type parameter must be an interface", nameof(TWrappedType));
             }
 
-            return new ProxyBuilder<TWrappedType>();
+            return new ProxyBuilder<TWrappedType>(this.ab);
         }
 
-        public static TAbstract NotifyPropertyChangedProxy<TAbstract>(object context = null)
+        public TAbstract NotifyPropertyChangedProxy<TAbstract>(object context = null)
         {
-            return (TAbstract)NotifyPropertyChangedProxy(typeof(TAbstract), context);
+            return (TAbstract)this.NotifyPropertyChangedProxy(typeof(TAbstract), context);
         }
 
-        public static INotifyPropertyChanged NotifyPropertyChangedProxy(Type type, object context = null)
+        public INotifyPropertyChanged NotifyPropertyChangedProxy(Type type, object context = null)
         {
-            var ab = DynamicAssembly.Default;
-            var concreteType = InpcProxies.GetOrAdd(type, t =>
+            var concreteType = this.inpcProxies.GetOrAdd(type, t =>
             {
-                var tb = ab.Module.DefineType("INPC." + t.FullName, TypeAttributes.Class);
+                var tb = this.ab.Module.DefineType("INPC." + t.FullName, TypeAttributes.Class);
                 tb.AddInterfaceImplementation(typeof(INotifyPropertyChanged));
                 if (t.IsInterface)
                 {
@@ -44,17 +54,17 @@ namespace VanceStubbs
                     tb.SetParent(t);
                 }
 
-                ab.DelegateAllConstructorsToBase(tb);
+                this.ab.DelegateAllConstructorsToBase(tb);
 
                 var staticConstructor = tb.DefineTypeInitializer();
                 var staticConstructorIl = staticConstructor.GetILGenerator();
 
                 var ev = typeof(INotifyPropertyChanged)
                     .GetEvent(nameof(INotifyPropertyChanged.PropertyChanged));
-                var inpcField = HasINPCImplemented(t) ? null : ab.ImplementEventByDelegatingToANewField(tb, ev);
-                foreach (var property in ab.AbstractPropertiesFor(t))
+                var inpcField = this.HasINPCImplemented(t) ? null : this.ab.ImplementEventByDelegatingToANewField(tb, ev);
+                foreach (var property in this.ab.AbstractPropertiesFor(t))
                 {
-                    var staticComparer = ImplementNotifyProperty(tb, property, inpcField);
+                    var staticComparer = this.ImplementNotifyProperty(tb, property, inpcField);
                     if (staticComparer != null)
                     {
                         staticConstructorIl.EmitCall(
@@ -70,13 +80,12 @@ namespace VanceStubbs
                 return tb.CreateTypeInfo();
             });
             return (INotifyPropertyChanged)(context == null
-                ? ab.ActivateInstance(concreteType)
-                : ab.ActivateInstance(concreteType, context));
+                ? this.ab.ActivateInstance(concreteType)
+                : this.ab.ActivateInstance(concreteType, context));
         }
 
-        private static FieldInfo ImplementNotifyProperty(TypeBuilder tb, PropertyInfo property, FieldInfo inpcEventField)
+        private FieldInfo ImplementNotifyProperty(TypeBuilder tb, PropertyInfo property, FieldInfo inpcEventField)
         {
-            var ab = DynamicAssembly.Default;
             var staticComparerType = typeof(EqualityComparer<>).MakeGenericType(property.PropertyType);
             var staticComparer = NeedsStaticEqualityComparer(property.PropertyType)
                 ? tb.DefineField(
@@ -88,18 +97,18 @@ namespace VanceStubbs
                 property.Name + "__backing_field" + Guid.NewGuid(),
                 property.PropertyType,
                 FieldAttributes.Private | FieldAttributes.SpecialName);
-            ImplementGetter(tb, property, field);
-            ImplementSetter(tb, property, inpcEventField, staticComparer, field);
+            this.ImplementGetter(tb, property, field);
+            this.ImplementSetter(tb, property, inpcEventField, staticComparer, field);
 
             return staticComparer;
 
             bool NeedsStaticEqualityComparer(Type type)
             {
-                return !UnorderedComparisonIsEnough(type) && type.GetMethod("op_Equality") == null;
+                return !this.UnorderedComparisonIsEnough(type) && type.GetMethod("op_Equality") == null;
             }
         }
 
-        private static bool HasINPCImplemented(Type type)
+        private bool HasINPCImplemented(Type type)
         {
             if (type.IsInterface)
             {
@@ -108,16 +117,16 @@ namespace VanceStubbs
 
             var ev = typeof(INotifyPropertyChanged)
                 .GetEvent(nameof(INotifyPropertyChanged.PropertyChanged));
-            return Enumerable.Where<KeyValuePair<MethodInfo, MethodInfo>>(InterfaceMapping(typeof(INotifyPropertyChanged), type), kvp => kvp.Key == ev.AddMethod || kvp.Key == ev.RemoveMethod)
+            return Enumerable.Where(this.InterfaceMapping(typeof(INotifyPropertyChanged), type), kvp => kvp.Key == ev.AddMethod || kvp.Key == ev.RemoveMethod)
                 .All(kvp => !kvp.Value.IsAbstract);
         }
 
-        private static bool UnorderedComparisonIsEnough(Type type)
+        private bool UnorderedComparisonIsEnough(Type type)
         {
             return type.IsPrimitive || !type.IsValueType || type.IsEnum;
         }
 
-        private static void ImplementSetter(
+        private void ImplementSetter(
             TypeBuilder tb,
             PropertyInfo property,
             FieldInfo inpcEventField,
@@ -152,7 +161,7 @@ namespace VanceStubbs
                 il.Emit(OpCodes.Stfld, field);
                 if (inpcEventField != null)
                 {
-                    RaiseEventByInvokingItDirectly(property, inpcEventField, il);
+                    this.RaiseEventByInvokingItDirectly(property, inpcEventField, il);
                 }
                 else
                 {
@@ -172,7 +181,7 @@ namespace VanceStubbs
                             "The class implements the event, but doesn't provide any recognisable method to raise it from a derived type.");
                     }
 
-                    RaiseEventByCallingAnEventMethod(property, raiseEventMethod, il);
+                    this.RaiseEventByCallingAnEventMethod(property, raiseEventMethod, il);
                 }
 
                 il.Emit(OpCodes.Ret);
@@ -181,7 +190,7 @@ namespace VanceStubbs
             void Equality(ILGenerator il, Type type, FieldInfo comparer)
             {
                 var label = il.DefineLabel();
-                if (UnorderedComparisonIsEnough(type))
+                if (this.UnorderedComparisonIsEnough(type))
                 {
                     il.Emit(OpCodes.Bne_Un_S, label);
                 }
@@ -214,7 +223,7 @@ namespace VanceStubbs
             }
         }
 
-        private static IEnumerable<KeyValuePair<MethodInfo, MethodInfo>> InterfaceMapping(Type interfaceType, Type concreteType)
+        private IEnumerable<KeyValuePair<MethodInfo, MethodInfo>> InterfaceMapping(Type interfaceType, Type concreteType)
         {
             var mapping = concreteType.GetInterfaceMap(interfaceType);
             for (int i = 0; i < mapping.InterfaceMethods.Length; i++)
@@ -223,7 +232,7 @@ namespace VanceStubbs
             }
         }
 
-        private static void ImplementGetter(
+        private void ImplementGetter(
             TypeBuilder tb,
             PropertyInfo property,
             FieldBuilder field)
@@ -240,7 +249,7 @@ namespace VanceStubbs
             il.Emit(OpCodes.Ret);
         }
 
-        private static void RaiseEventByCallingAnEventMethod(PropertyInfo property, MethodInfo method, ILGenerator il)
+        private void RaiseEventByCallingAnEventMethod(PropertyInfo property, MethodInfo method, ILGenerator il)
         {
             il.Emit(OpCodes.Ldarg_0);
             var parameters = method.GetParameters();
@@ -262,7 +271,7 @@ namespace VanceStubbs
             il.EmitCall(callOpcode, method, null);
         }
 
-        private static void RaiseEventByInvokingItDirectly(PropertyInfo property, FieldInfo inpcEventField, ILGenerator il)
+        private void RaiseEventByInvokingItDirectly(PropertyInfo property, FieldInfo inpcEventField, ILGenerator il)
         {
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldfld, inpcEventField);
@@ -283,28 +292,33 @@ namespace VanceStubbs
 
         public class ProxyBuilder<TWrappedType>
         {
-            internal ProxyBuilder()
+            private DynamicAssembly ab;
+
+            internal ProxyBuilder(DynamicAssembly ab)
             {
+                this.ab = ab;
             }
 
             public InstantiatedStatefulBuilder<TWrappedType, TState> WithState<TState>()
             {
-                return new InstantiatedStatefulBuilder<TWrappedType, TState>();
+                return new InstantiatedStatefulBuilder<TWrappedType, TState>(this.ab);
             }
 
             public InstantiatedStatelessBuilder<TWrappedType> Stateless()
             {
-                return new InstantiatedStatelessBuilder<TWrappedType>();
+                return new InstantiatedStatelessBuilder<TWrappedType>(this.ab);
             }
         }
 
         public class InstantiatedStatelessBuilder<TWrappedType>
         {
             private readonly InstantiatedStatefulBuilder<TWrappedType, object> builder;
+            private readonly DynamicAssembly ab;
 
-            internal InstantiatedStatelessBuilder()
+            internal InstantiatedStatelessBuilder(DynamicAssembly ab)
             {
-                this.builder = new InstantiatedStatefulBuilder<TWrappedType, object>();
+                this.ab = ab;
+                this.builder = new InstantiatedStatefulBuilder<TWrappedType, object>(ab);
             }
 
             public InstantiatedStatelessBuilder<TWrappedType> WithPreExitHandler(Func<TWrappedType, object, object> preExit)
@@ -328,12 +342,15 @@ namespace VanceStubbs
 
         public class InstantiatedStatefulBuilder<TWrappedType, TState>
         {
+            private DynamicAssembly ab;
+
             private Func<TWrappedType, TState, object, object> preExit;
 
             private Action<TWrappedType, TState, object[]> postEntry;
 
-            internal InstantiatedStatefulBuilder()
+            internal InstantiatedStatefulBuilder(DynamicAssembly ab)
             {
+                this.ab = ab;
             }
 
             public InstantiatedStatefulBuilder<TWrappedType, TState> WithPreExitHandler(Func<TWrappedType, TState, object, object> preExit)
@@ -386,8 +403,7 @@ namespace VanceStubbs
 
             public Func<TWrappedType, TState, TWrappedType> Create()
             {
-                var ab = DynamicAssembly.Default;
-                var tb = ab.Module.DefineType(Guid.NewGuid().ToString(), TypeAttributes.Class);
+                var tb = this.ab.Module.DefineType(Guid.NewGuid().ToString(), TypeAttributes.Class);
                 var abstractType = typeof(TWrappedType);
                 tb.AddInterfaceImplementation(abstractType);
 
@@ -427,13 +443,13 @@ namespace VanceStubbs
                     il.Emit(OpCodes.Ret);
                 }
 
-                ab.ImplementAbstractMethods(tb, abstractType, ImplementAsDecorator, false);
+                this.ab.ImplementAbstractMethods(tb, abstractType, ImplementAsDecorator, false);
                 var typeInfo = tb.CreateTypeInfo();
                 var runtimePostEntryField = typeInfo.GetField(nameof(this.postEntry), BindingFlags.Static | BindingFlags.NonPublic);
                 runtimePostEntryField?.SetValue(typeInfo, this.postEntry);
                 var runtimePreExitField = typeInfo.GetField(nameof(this.preExit), BindingFlags.Static | BindingFlags.NonPublic);
                 runtimePreExitField?.SetValue(typeInfo, this.preExit);
-                return (target, state) => (TWrappedType)ab.ActivateInstance(typeInfo, target, state);
+                return (target, state) => (TWrappedType)this.ab.ActivateInstance(typeInfo, target, state);
 
                 void ImplementAsDecorator(MethodInfo method, ILGenerator il)
                 {

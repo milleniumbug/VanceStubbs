@@ -11,7 +11,7 @@ namespace VanceStubbs.Tests
         [Test]
         public void BasicStatefulProxy()
         {
-            var f = VanceStubbs.Proxies
+            var f = VanceStubbs.Proxies.Factory
                 .For<ISimpleInterface>()
                 .WithState<int>()
                 .WithPreExitHandler((target, state, o) => o is int x ? x + state : o)
@@ -25,7 +25,7 @@ namespace VanceStubbs.Tests
         [Test]
         public void BasicStatefulObjectProxy()
         {
-            var f = VanceStubbs.Proxies
+            var f = VanceStubbs.Proxies.Factory
                 .For<ISimpleInterface>()
                 .WithState<object>()
                 .WithPreExitHandler((target, state, o) => o is int x ? x + 42 : o)
@@ -39,7 +39,7 @@ namespace VanceStubbs.Tests
         [Test]
         public void BasicStatelessProxy()
         {
-            var f = VanceStubbs.Proxies
+            var f = VanceStubbs.Proxies.Factory
                 .For<ISimpleInterface>()
                 .Stateless()
                 .WithPreExitHandler((target, o) => o is int x ? x + 42 : o)
@@ -53,7 +53,7 @@ namespace VanceStubbs.Tests
         [Test]
         public void Noop()
         {
-            var f = VanceStubbs.Proxies
+            var f = VanceStubbs.Proxies.Factory
                 .For<ISimpleInterface>()
                 .Stateless()
                 .Create();
@@ -65,7 +65,7 @@ namespace VanceStubbs.Tests
         [Test]
         public void ParameterModification()
         {
-            var f = VanceStubbs.Proxies
+            var f = VanceStubbs.Proxies.Factory
                 .For<ISimpleInterface>()
                 .WithState<int>()
                 .WithPostEntryHandler((target, state, parameters) =>
@@ -84,7 +84,7 @@ namespace VanceStubbs.Tests
         [Test]
         public void Chaining()
         {
-            var f = VanceStubbs.Proxies
+            var f = VanceStubbs.Proxies.Factory
                 .For<ISimpleInterface>()
                 .WithState<List<string>>()
                 .WithPostEntryHandler((target, state, parameters) => state.Add("Out1"))

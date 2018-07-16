@@ -13,7 +13,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void InterfaceListGeneric()
             {
-                IList<string> inst = VanceStubbs.Stubs.BlackHole<IList<string>>();
+                IList<string> inst = VanceStubbs.Stubs.Factory.BlackHole<IList<string>>();
                 Assert.AreEqual(inst.Count, 0);
                 Assert.AreEqual(inst[0], null);
                 inst.RemoveAt(0);
@@ -22,7 +22,7 @@ namespace VanceStubbs.Tests
             [Test]
             public void AllMethods()
             {
-                IAllMethods inst = VanceStubbs.Stubs.BlackHole<IAllMethods>();
+                IAllMethods inst = VanceStubbs.Stubs.Factory.BlackHole<IAllMethods>();
                 inst.Void();
                 Assert.AreEqual(inst.Bool(), false);
                 Assert.AreEqual(inst.Byte(), (byte)0);
