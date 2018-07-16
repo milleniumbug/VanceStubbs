@@ -8,3 +8,6 @@ description
 
 files
   bin/Release/netstandard2.0/* ==> lib/netstandard2.0
+
+excludedgroups
+  Analyzers
