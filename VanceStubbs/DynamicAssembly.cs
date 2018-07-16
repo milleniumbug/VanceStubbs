@@ -12,11 +12,11 @@ namespace VanceStubbs
 
     internal class DynamicAssembly
     {
-        public static readonly DynamicAssembly Default = new DynamicAssembly(debugMode: true);
+        public static readonly DynamicAssembly Default = new DynamicAssembly();
 
         private readonly bool debugMode;
 
-        public DynamicAssembly(bool debugMode)
+        public DynamicAssembly(bool debugMode = false)
         {
             var assemblyName = new AssemblyName("VanceStubbs" + Guid.NewGuid());
             var moduleName = "proxiesmodule";

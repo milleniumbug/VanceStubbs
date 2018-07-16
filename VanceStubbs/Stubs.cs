@@ -7,24 +7,22 @@ namespace VanceStubbs
 
     public class Stubs
     {
-        private static readonly Lazy<Stubs> factory = new Lazy<Stubs>(() => new Stubs(DynamicAssembly.Default));
-
-        private readonly DynamicAssembly ab;
+        private readonly Factory factory;
 
         private readonly ConcurrentDictionary<Type, TypeInfo> whiteholes = new ConcurrentDictionary<Type, TypeInfo>();
 
         private readonly ConcurrentDictionary<Type, TypeInfo> blackholes = new ConcurrentDictionary<Type, TypeInfo>();
 
-        public static Stubs Factory => factory.Value;
+        internal Stubs(Factory factory)
+        {
+            this.factory = factory;
+        }
+
+        public static Stubs Factory => VanceStubbs.Factory.Default.OfStubs;
 
         public static T Undefined<T>()
         {
             throw new NotImplementedException("Undefined<T>() was evaluated");
-        }
-
-        internal Stubs(DynamicAssembly assembly)
-        {
-            this.ab = assembly;
         }
 
         public TAbstract WhiteHole<TAbstract>()
@@ -34,8 +32,8 @@ namespace VanceStubbs
 
         public object WhiteHole(Type type)
         {
-            var concreteType = this.whiteholes.GetOrAdd(type, t => this.ab.ImplementAbstractMethods("WhiteHole." + t.FullName, t, ImplementAsThrowing));
-            return this.ab.ActivateInstance(concreteType);
+            var concreteType = this.whiteholes.GetOrAdd(type, t => this.factory.Assembly.ImplementAbstractMethods("WhiteHole." + t.FullName, t, ImplementAsThrowing));
+            return this.factory.Assembly.ActivateInstance(concreteType);
 
             void ImplementAsThrowing(MethodInfo originalMethod, ILGenerator il)
             {
@@ -50,8 +48,8 @@ namespace VanceStubbs
 
         public object BlackHole(Type type)
         {
-            var concreteType = this.blackholes.GetOrAdd(type, t => this.ab.ImplementAbstractMethods("BlackHole." + t.FullName, t, ImplementAsReturnDefault));
-            return this.ab.ActivateInstance(concreteType);
+            var concreteType = this.blackholes.GetOrAdd(type, t => this.factory.Assembly.ImplementAbstractMethods("BlackHole." + t.FullName, t, ImplementAsReturnDefault));
+            return this.factory.Assembly.ActivateInstance(concreteType);
 
             void ImplementAsReturnDefault(MethodInfo originalMethod, ILGenerator il)
             {

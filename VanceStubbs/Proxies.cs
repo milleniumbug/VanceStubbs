@@ -10,18 +10,19 @@ namespace VanceStubbs
 
     public class Proxies
     {
-        private static readonly Lazy<Proxies> factory = new Lazy<Proxies>(() => new Proxies(DynamicAssembly.Default));
-
         private readonly ConcurrentDictionary<Type, TypeInfo> inpcProxies = new ConcurrentDictionary<Type, TypeInfo>();
+
+        private Factory factory;
 
         private DynamicAssembly ab;
 
-        internal Proxies(DynamicAssembly assembly)
-        {
-            this.ab = assembly;
-        }
+        public static Proxies Factory => VanceStubbs.Factory.Default.OfProxies;
 
-        public static Proxies Factory => factory.Value;
+        internal Proxies(Factory factory)
+        {
+            this.factory = factory;
+            this.ab = this.factory.Assembly;
+        }
 
         public ProxyBuilder<TWrappedType> For<TWrappedType>()
         {
