@@ -16,9 +16,9 @@ namespace VanceStubbs
 
         internal static Factory Default => defaultFactory.Value;
 
-        private DynamicAssembly assembly;
+        private readonly DynamicAssembly assembly;
 
-        internal DynamicAssembly Assembly => assembly;
+        internal DynamicAssembly Assembly => this.assembly;
 
         internal Factory(DynamicAssembly ab)
         {

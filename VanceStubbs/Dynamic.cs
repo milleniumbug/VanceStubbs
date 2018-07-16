@@ -7,6 +7,8 @@ namespace VanceStubbs
     {
         private readonly Factory factory;
 
+        public static Dynamic Factory => VanceStubbs.Factory.Default.Dynamic;
+
         internal Dynamic(Factory factory)
         {
             this.factory = factory;
