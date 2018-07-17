@@ -10,9 +10,9 @@ namespace VanceStubbs
 
     public class TypeDictionary<TValue> : IReadOnlyDictionary<Type, TValue>
     {
-        private IReadOnlyList<TValue> underlyingCollection;
+        private List<TValue> values;
 
-        private IReadOnlyList<Type> originalTypes;
+        private Dictionary<Type, int> directTypeMap;
 
         private dynamic dispatcher;
 
@@ -76,8 +76,9 @@ namespace VanceStubbs
 
             TypeInfo dispatcherType = dispatcherTypeBuilder.CreateTypeInfo();
             this.dispatcher = Activator.CreateInstance(dispatcherType);
-            this.underlyingCollection = underlyingCollection.AsReadOnly();
-            this.originalTypes = originalTypes.AsReadOnly();
+            var l = source.ToList();
+            this.values = l.Select(kvp => kvp.Value).ToList();
+            this.directTypeMap = l.Select((kvp, index) => new KeyValuePair<Type, int>(kvp.Key, index)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             this.abstractTypeCache = new TypeFactoryCache<Type>((fac, t) =>
             {
                 return fac.OfStubs.BlackHoleType(t);
@@ -86,12 +87,27 @@ namespace VanceStubbs
 
         private int Dispatch(Type key)
         {
+            if (this.directTypeMap.TryGetValue(key, out int valueIndex))
+            {
+                return valueIndex;
+            }
+
             if (key.IsAbstract || key.IsInterface)
             {
                 key = this.abstractTypeCache.Get(key);
             }
 
-            dynamic dummy = FormatterServices.GetUninitializedObject(key);
+            dynamic dummy;
+            if (key == typeof(void))
+            {
+                return -1;
+            }
+            else if (key == typeof(string))
+            {
+                dummy = "";
+            }
+
+            dummy = FormatterServices.GetUninitializedObject(key);
             return this.dispatcher.Dispatch(dummy);
         }
 
@@ -106,26 +122,26 @@ namespace VanceStubbs
                 }
                 else
                 {
-                    return this.underlyingCollection[r];
+                    return this.values[r];
                 }
             }
         }
 
-        public IEnumerable<Type> Keys => this.originalTypes;
+        public IEnumerable<Type> Keys => this.directTypeMap.Keys;
 
-        public IEnumerable<TValue> Values => this.underlyingCollection;
+        public IEnumerable<TValue> Values => this.values;
 
-        public int Count => this.underlyingCollection.Count;
+        public int Count => this.values.Count;
 
         public bool ContainsKey(Type key)
         {
-            return this.Dispatch(key) == -1;
+            return this.Dispatch(key) != -1;
         }
 
         public IEnumerator<KeyValuePair<Type, TValue>> GetEnumerator()
         {
-            return this.originalTypes
-                .Zip(this.underlyingCollection, (k, v) => new KeyValuePair<Type, TValue>(k, v))
+            return this.directTypeMap
+                .Zip(this.values, (k, v) => new KeyValuePair<Type, TValue>(k.Key, v))
                 .GetEnumerator();
         }
 
@@ -139,7 +155,7 @@ namespace VanceStubbs
             }
             else
             {
-                value = this.underlyingCollection[r];
+                value = this.values[r];
                 return true;
             }
         }

@@ -22,6 +22,19 @@ namespace VanceStubbs.Tests
                 Assert.AreEqual("int", d[typeof(int)]);
                 Assert.AreEqual("enumerable", d[typeof(IReadOnlyList<int>)]);
             }
+
+            [Test]
+            public void TypeLookupString()
+            {
+                var d = new TypeDictionary<string>(new Dictionary<Type, string>
+                {
+                    { typeof(IEnumerable<int>), "enumerable" },
+                    { typeof(string), "string" },
+                });
+                Assert.AreEqual("enumerable", d[typeof(List<int>)]);
+                Assert.IsFalse(d.ContainsKey(typeof(void)));
+                Assert.AreEqual("string", d[typeof(string)]);
+            }
         }
     }
 }
