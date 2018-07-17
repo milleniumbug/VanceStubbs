@@ -106,8 +106,11 @@ namespace VanceStubbs
             {
                 dummy = "";
             }
+            else
+            {
+                dummy = FormatterServices.GetUninitializedObject(key);
+            }
 
-            dummy = FormatterServices.GetUninitializedObject(key);
             return this.dispatcher.Dispatch(dummy);
         }
 

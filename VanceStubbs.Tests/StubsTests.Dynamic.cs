@@ -35,6 +35,17 @@ namespace VanceStubbs.Tests
                 Assert.IsFalse(d.ContainsKey(typeof(void)));
                 Assert.AreEqual("string", d[typeof(string)]);
             }
+
+            [Test]
+            public void TypeLookupObject()
+            {
+                var d = new TypeDictionary<string>(new Dictionary<Type, string>
+                {
+                    { typeof(object), "object" }
+                });
+                Assert.AreEqual("object", d[typeof(List<int>)]);
+                Assert.AreEqual("object", d[typeof(string)]);
+            }
         }
     }
 }
