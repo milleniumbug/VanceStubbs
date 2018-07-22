@@ -37,29 +37,25 @@ namespace VanceStubbs
             {
                 var key = kvp.Key;
                 var value = kvp.Value;
-                Type type;
-                if (key.ContainsGenericParameters)
+                if (key == typeof(object))
                 {
-                    throw new NotImplementedException();
-
-                    // var gen = key.GenericTypeArguments.Where(t => t.IsGenericParameter);
-                }
-                else
-                {
-                    if (key == typeof(object))
-                    {
-                        hasObjectFallback = true;
-                    }
-
-                    type = key;
+                    hasObjectFallback = true;
                 }
 
-                var method = dispatcherTypeBuilder.DefineMethod("Dispatch", MethodAttributes.Public, CallingConventions.HasThis);
-                method.SetReturnType(typeof(int));
-                method.SetParameters(new Type[] { type });
-                var il = method.GetILGenerator();
-                il.Emit(OpCodes.Ldc_I4, retVal);
-                il.Emit(OpCodes.Ret);
+                // we need to special-case nullables
+                // because you can't have a boxed instance of nullable type
+                // that makes it impossible to call a F<T>(Nullable<T> x)
+                // through dynamic
+                if (key == typeof(Nullable<>))
+                {
+                    DefineDispatcherMethod("DispatchNullableHack", dispatcherTypeBuilder, retVal, key.GetTypeInfo().GenericTypeParameters[0]);
+                }
+                else if (Nullable.GetUnderlyingType(key) != null)
+                {
+                    DefineDispatcherMethod("DispatchNullableHack", dispatcherTypeBuilder, retVal, Nullable.GetUnderlyingType(key));
+                }
+
+                DefineDispatcherMethod("Dispatch", dispatcherTypeBuilder, retVal, key);
 
                 originalTypes.Add(key);
                 underlyingCollection.Add(value);
@@ -85,6 +81,54 @@ namespace VanceStubbs
             });
         }
 
+        private static void DefineDispatcherMethod(string name, TypeBuilder dispatcherTypeBuilder, int retVal, Type type)
+        {
+            var method = dispatcherTypeBuilder.DefineMethod(name, MethodAttributes.Public, CallingConventions.HasThis);
+            method.SetReturnType(typeof(int));
+            if (type.ContainsGenericParameters)
+            {
+                var sourceTypeParams = type
+                    .GetTypeInfo()
+                    .GenericTypeParameters;
+                if (type.IsGenericParameter)
+                {
+                    sourceTypeParams = new Type[] { type };
+                }
+
+                var parameterBuilders = method.DefineGenericParameters(sourceTypeParams.Select(p => p.Name).ToArray());
+                foreach (var pb in parameterBuilders.Zip(sourceTypeParams, (b, s) => new { b, s }))
+                {
+                    var constraints = pb.s.GetGenericParameterConstraints();
+                    var baseTypeConstraint = constraints.Where(c => !c.IsInterface).SingleOrDefault();
+                    if (baseTypeConstraint == typeof(ValueType))
+                    {
+                        pb.b.SetGenericParameterAttributes(GenericParameterAttributes.NotNullableValueTypeConstraint);
+                    }
+
+                    if (baseTypeConstraint != null)
+                    {
+                        pb.b.SetBaseTypeConstraint(baseTypeConstraint);
+                    }
+
+                    pb.b.SetInterfaceConstraints(constraints.Where(c => c.IsInterface).ToArray());
+                }
+
+                if (type.IsGenericTypeDefinition)
+                {
+                    type = type.MakeGenericType(parameterBuilders);
+                }
+                else if (type.IsGenericParameter)
+                {
+                    type = parameterBuilders[0];
+                }
+            }
+
+            method.SetParameters(new Type[] { type });
+            var il = method.GetILGenerator();
+            il.Emit(OpCodes.Ldc_I4, retVal);
+            il.Emit(OpCodes.Ret);
+        }
+
         private int Dispatch(Type key)
         {
             if (this.directTypeMap.TryGetValue(key, out int valueIndex))
@@ -108,7 +152,17 @@ namespace VanceStubbs
             }
             else
             {
-                dummy = FormatterServices.GetUninitializedObject(key);
+                var nullableUnderlying = Nullable.GetUnderlyingType(key);
+                if (nullableUnderlying != null)
+                {
+                    var t = (Type)this.dispatcher.GetType();
+                    dummy = FormatterServices.GetUninitializedObject(key);
+                    return this.dispatcher.DispatchNullableHack(dummy);
+                }
+                else
+                {
+                    dummy = FormatterServices.GetUninitializedObject(key);
+                }
             }
 
             return this.dispatcher.Dispatch(dummy);

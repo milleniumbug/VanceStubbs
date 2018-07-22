@@ -46,6 +46,22 @@ namespace VanceStubbs.Tests
                 Assert.AreEqual("object", d[typeof(List<int>)]);
                 Assert.AreEqual("object", d[typeof(string)]);
             }
+
+            [Test]
+            public void TypeLookupGeneric()
+            {
+                var d = new TypeDictionary<string>(new Dictionary<Type, string>
+                {
+                    { typeof(int), "int" },
+                    { typeof(Nullable<>), "nullable" },
+                    { typeof(List<int>), "list of int" },
+                    { typeof(List<>), "list" }
+                });
+                Assert.AreEqual("list of int", d[typeof(List<int>)]);
+                Assert.AreEqual("list", d[typeof(List<string>)]);
+                Assert.AreEqual("nullable", d[typeof(double?)]);
+                Assert.AreEqual("int", d[typeof(int)]);
+            }
         }
     }
 }
